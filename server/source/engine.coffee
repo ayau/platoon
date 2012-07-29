@@ -4,8 +4,10 @@ WIDTH    = 8000
 INTERVAL = 33 #frame rate
 
 # Holds all players
-players = new Object()
+players = {}
 bullets = []
+
+for key, value of players
 
 class Sprite
     constructor: ->

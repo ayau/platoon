@@ -1,4 +1,3 @@
-$ -> 
   #CONSTANTS
   INTERVAL = 33 #rate of redraw
   PLAYERWIDTH = 50
@@ -52,7 +51,7 @@ $ ->
       bullets = []
       players = []
       bullets.push(new uiPiece(bullet, "bullet")) for bullet in model.bullets
-      players.push(new uiPiece(player, "player")) for player in model.players
+      players.push(new uiPiece(player, "player")) for key, player of model.players
       return {
         bullets: bullets
         player: players
@@ -64,33 +63,31 @@ $ ->
         @y = math.floor(piece.y / VIEWSCALE)
         @type = type
 
+$ -> 
   renderer = new Renderer(document.getElementById('canvas').getContext('2d'), 800, 500)
   setInterval (-> renderer.redraw model.clone), INTERVAL
 
 
 
-
-
-
   #Misc library code required
-  clone = (obj) ->
-    if not obj? or typeof obj isnt 'object'
-      return obj
+clone = (obj) ->
+  if not obj? or typeof obj isnt 'object'
+    return obj
 
-    if obj instanceof Date
-      return new Date(obj.getTime()) 
+  if obj instanceof Date
+    return new Date(obj.getTime()) 
 
-    if obj instanceof RegExp
-      flags = ''
-      flags += 'g' if obj.global?
-      flags += 'i' if obj.ignoreCase?
-      flags += 'm' if obj.multiline?
-      flags += 'y' if obj.sticky?
-      return new RegExp(obj.source, flags) 
+  if obj instanceof RegExp
+    flags = ''
+    flags += 'g' if obj.global?
+    flags += 'i' if obj.ignoreCase?
+    flags += 'm' if obj.multiline?
+    flags += 'y' if obj.sticky?
+    return new RegExp(obj.source, flags) 
 
-    newInstance = new obj.constructor()
+  newInstance = new obj.constructor()
 
-    for key of obj
-      newInstance[key] = clone obj[key]
+  for key of obj
+    newInstance[key] = clone obj[key]
 
-    return newInstance
+  return newInstance
