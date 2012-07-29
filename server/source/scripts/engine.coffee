@@ -21,6 +21,7 @@ class exports.Engine
     RES_PLAYER_FIRED    = 'player_fired'
     RES_PLAYER_COLLIDED = 'player_collided'
     RES_PLAYER_HIT      = 'player_hit'
+    RES_ERROR           = 'error'
 
     responses = null
 
@@ -40,7 +41,7 @@ class exports.Engine
 
     class Sprite
         constructor: ->
-            @x = 100 
+            @x = 100
             @y = 100
             @w = 100
             @h = 100
@@ -165,7 +166,7 @@ class exports.Engine
                 if items[1].type == TYPE_BULLET
                     return {'response': RES_PLAYER_HIT, 'paylaod': {'id': id, 'x': p.x, 'y': p.y, 'bullet_id': items[1].id}}
                 else
-                    return {'response': RES_PLAYER_COLLIDED, 'payload': {'id': id, 'x': p.x, 'y': p.y, 'player_id': items[1].id}}           
+                    return {'response': RES_PLAYER_COLLIDED, 'payload': {'id': id, 'x': p.x, 'y': p.y, 'player_id': items[1].id}}
             return {'response': RES_PLAYER_MOVED, 'payload': {'id': id, 'x': p.x, 'y': p.y}}
 
     player_fire : (id, angle, v) ->
