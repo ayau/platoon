@@ -15,6 +15,11 @@ task 'build', 'Build all resources', (options) ->
   prepare options, dir.static, Patterns.Copy, ->
     prepare options, dir.client, Patterns.Coffee
 
+task 'run', 'Run the server', (options) ->
+  process = exec 'node server/compiled/server.js'
+  process.stdout.on 'data', (data) ->
+    console.log data
+
 # Directories
 dir =
   server:
