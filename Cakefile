@@ -1,4 +1,4 @@
-{exec} = require 'child_process'
+{exec, spawn} = require 'child_process'
 fs = require 'fs'
 path = require 'path'
 
@@ -16,8 +16,13 @@ task 'build', 'Build all resources', (options) ->
     prepare options, dir.client, Patterns.Coffee
 
 task 'run', 'Run the server', (options) ->
-  process = exec 'node server/compiled/server.js'
-  process.stdout.on 'data', (data) ->
+  process = spawn 'node', ['server/compiled/server.js']
+  unless options.silent
+    process.stdout.setEncoding('utf8')
+    process.stdout.on 'data', (data) ->
+      console.log data
+  process.stderr.setEncoding('utf8')
+  process.stderr.on 'data', (data) ->
     console.log data
 
 # Directories
