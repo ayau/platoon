@@ -19,3 +19,4 @@ npm-debug.log
 
 client/compiled
 server/compiled
+.DS_Store
