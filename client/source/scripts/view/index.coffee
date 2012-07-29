@@ -2,61 +2,69 @@ $ ->
   #CONSTANTS
   canvas   = null
   ctx = null
-  HEIGHT   = 500 #Canvas sizes
-  WIDTH  = 800
   INTERVAL = 33 #rate of redraw
   PLAYERWIDTH = 50
   PLAYERHEIGHT = 50
   VIEWSCALE = 10
 
-  init = ->
-    canvas = document.getElementById('canvas')
-    ctx = canvas.getContext('2d')
-    setInterval(redraw, INTERVAL)
-
-    redraw = ->
-      ctx.clearRect(0, 0, WIDTH, HEIGHT)
-      uiPieces = toUiPieces(model.clone) #clone the model and convert them to uiPieces
+  class Renderer
+    constructor: (ctx, width, height) ->
+      @width = width
+      @height = height
+      @ctx = ctx
+    redraw: (model) ->
+      @ctx.clearRect(0, 0, WIDTH, HEIGHT)
+      uiPieces = @toUiPieces model #clone the model and convert them to uiPieces
       #Painters algorithm for layer/render ordering
-      drawBackground()
-      drawPiece(p) for p in uiPieces.players
-      drawPiece(p) for p in uiPieces.bullets
+      @drawBackground()
+      @drawPiece(p) for p in uiPieces.players
+      @drawPiece(p) for p in uiPieces.bullets
 
-  drawPiece = (piece) ->
-    drawer = getDrawer(piece)
-    drawer.draw(piece)
+    drawPiece = (piece) ->
+      drawer = @drawers[piece.type]
+      drawer.draw(piece)
 
-  getDrawer = (piece) ->
-    switch piece.class
-      when "player" then return playerDrawer
-      when "bullet" then return bulletDrawer
-    #add every kind of drawer here (lack of Strategy pattern makes me sad.)
+    drawers = 
+      player: playerDrawer
+      bullet: bulletDrawer
 
-  playerDrawer = ->
-    draw = (player) -> 
-      ctx.save
-      ctx.fillStyle = '#005500'
-      ctx.fillRect player.x, player.y, PLAYERWIDTH, PLAYERHEIGHT
-      ctx.load
+    playerDrawer = ->
+      draw = (player) -> 
+        @ctx.save
+        @ctx.fillStyle = '#005500'
+        @ctx.fillRect player.x, player.y, PLAYERWIDTH, PLAYERHEIGHT
+        @ctx.load
 
-  drawBackground = ->
-    ctx.save
-    ctx.fillStyle = '#5c5'
-    ctx.fillRect 0, 0, WIDTH, HEIGHT
-    ctx.load
+    drawBackground = ->
+      @ctx.save
+      @ctx.fillStyle = '#5c5'
+      @ctx.fillRect 0, 0, WIDTH, HEIGHT
+      @ctx.load
 
-  toUiPieces = (model) ->
-    bullets = []
-    players = []
-    bullets.push(new uiBullet(bullet, "bullet")) for bullet in model.bullets
-    players.push(new uiPlayer(player, "player")) for player in model.players
+    toUiPieces = (model) ->
+      bullets = []
+      players = []
+      bullets.push(new uiPiece(bullet, "bullet")) for bullet in model.bullets
+      players.push(new uiPiece(player, "player")) for player in model.players
+      return 
+        bullets: bullets
+        player: players
 
-  class uiPiece
-    constructor: (piece, class) ->
-      x = math.floor(piece.x / VIEWSCALE)
-      y = math.floor(piece.y / VIEWSCALE)
-      class = class
+    class UiPiece
+      constructor: (piece, type) ->
+        @x = math.floor(piece.x / VIEWSCALE)
+        @y = math.floor(piece.y / VIEWSCALE)
+        @type = type
 
+  renderer = new Renderer(document.getElementById('canvas').getContext('2d'), 800, 500)
+  setInterval (-> renderer.redraw model.clone), INTERVAL
+
+
+
+
+
+
+  #Misc library code required
   clone = (obj) ->
     if not obj? or typeof obj isnt 'object'
       return obj
