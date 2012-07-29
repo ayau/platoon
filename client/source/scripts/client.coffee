@@ -28,7 +28,9 @@ $ ->
     x: 800
     y: 500
   @view = new Renderer(canvas, @model)
-  
+
 
   setModel = (model) ->
     @model = model
+
+  setInterval @view.redraw, window.INTERVAL

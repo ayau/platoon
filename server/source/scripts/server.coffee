@@ -10,42 +10,51 @@ server = http.createServer (request, response) ->
     file.serve request, response
 
 frame = 0
+setInterval (-> frame++), 20
 
 actions = []
 
 clients = {}
 
+# controller = require './controller'
+{Engine} = require './engine'
+engine = new Engine()
+
 io.listen(server.listen 8080).sockets.on 'connection', (socket) ->
-  x = 0
-  y = 0
   clients[socket.id] = socket
   socket.emit 'connected',
     id: socket.id
-  socket.on 'position', (data) ->
-    x = data.x
-    y = data.y
-    data.id = socket.id
-    actions.push data
-    # do update
+
+  # socket.on 'position', (data) ->
+  #   data.id = socket.id
+  #   # actions.push data
+  #   # do update
+
   socket.on 'move', (data) ->
-    x += data.x
-    y += data.y
     data.id = socket.id
-    data.x = x
-    data.y = y
-    actions.push data
+    # engine.player_move()
+    console.log engine.get_state()
+    data.contents = engine.get_state()
+    # actions.push data
     # do update
+    respond data
+
   socket.on 'disconnect', ->
     delete clients[socket.id]
 
-
-update = ->
-  data =
-    frame: frame
-  data.actions = actions
+respond = (data)->
   for id, client of clients
     client.emit 'update', data
-  actions = []
-  frame++
 
-setInterval update, 20
+setInterval (-> frame++), 20
+# gameLoop = (loopCode) -> setInterval loopCode, 20
+# gameLoop ->
+#   data =
+#     frame: frame
+#   data.actions = actions
+#   respond data
+#   # controller.loop respond
+#   actions = []
+#   frame++
+
+
