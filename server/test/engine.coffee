@@ -36,6 +36,10 @@ describe 'player', ->
     it 'has fired', ->
         engine.get_rects().should.equal 4
 
+describe 'state', ->
+    it 'is not null', ->
+        engine.get_state().should.equal true
+
 # describe 'response_list', ->
 #     it 'should have 4 actions', ->
 #         engine.response_pop().length.should.equal 4

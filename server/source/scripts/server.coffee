@@ -22,7 +22,7 @@ engine = new Engine()
 
 engine.init()
 
-engine.create_player(1, 100,100)
+console.log engine.create_player(1, 100,100)
 
 io.listen(server.listen 8080).sockets.on 'connection', (socket) ->
   clients[socket.id] = socket
