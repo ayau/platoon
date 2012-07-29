@@ -10,8 +10,10 @@ PLAYER_HEIGHT = 100
 
 
 # Holds all players
-players = new Object()
+players = {}
 bullets = []
+
+for key, value of players
 
 class Sprite
     constructor: ->
