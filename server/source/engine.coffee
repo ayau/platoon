@@ -1,3 +1,5 @@
+require('../static/QuadTree')
+
 #CONSTANTS
 HEIGHT        = 5000
 WIDTH         = 8000
@@ -5,6 +7,7 @@ INTERVAL      = 33      #frame rate
 
 PLAYER_WIDTH  = 100
 PLAYER_HEIGHT = 100
+
 
 # Holds all players
 players = new Object()
