@@ -174,22 +174,26 @@ class exports.Engine
             p.move(dx, dy)
             r = p.rect
             items =  tree.retrieve(r)
-            if items.length > 1
-                if items[1].type == TYPE_BULLET
-                    return {'response': RES_PLAYER_HIT, 'paylaod': {'id': id, 'x': p.x, 'y': p.y, 'bullet_id': items[1].id}}
-                else
-                    return {'response': RES_PLAYER_COLLIDED, 'payload': {'id': id, 'x': p.x, 'y': p.y, 'player_id': items[1].id}}
+            for item in items
+                if item != r
+                    if item.type == TYPE_BULLET
+                        return {'response': RES_PLAYER_HIT, 'paylaod': {'id': id, 'x': p.x, 'y': p.y, 'bullet_id': item.id}}
+                    else
+                        return {'response': RES_PLAYER_COLLIDED, 'payload': {'id': id, 'x': p.x, 'y': p.y, 'player_id': item.id}}
             return {'response': RES_PLAYER_MOVED, 'payload': {'id': id, 'x': p.x, 'y': p.y}}
+        return {'response': RES_ERROR, 'paylaod': {'error': 'player not found'}}
 
     player_fire : (id, angle, v) ->
         if bullets.hasOwnProperty(bullet_count)
             return false
-        p = players[id]
-        b = p.fire(angle, v)
-        bullets[bullet_count] = b
-        update_tree()
-        bullet_count = bullet_count + 1
-        return {'response': RES_PLAYER_FIRED, 'payload': {'id': id, 'x': x, 'y', y, 'bullet_id': b.id}}
+        if players.hasOwnProperty(id)
+            p = players[id]
+            b = p.fire(angle, v)
+            bullets[bullet_count] = b
+            update_tree()
+            bullet_count = bullet_count + 1
+            return {'response': RES_PLAYER_FIRED, 'payload': {'id': id, 'x': p.x, 'y': p.y, 'bullet_id': b.id}}
+        return {'response': RES_ERROR, 'paylaod': {'error': 'player not found'}}
 
     get_state: () ->
         players: players

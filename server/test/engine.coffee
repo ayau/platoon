@@ -29,8 +29,12 @@ describe 'tree', ->
         engine.get_rects().should.equal 3
 
 describe 'player', ->
+    it 'should have fired', ->
+        engine.player_fire(1, 0.3, 1000).should.equal true
+
+describe 'player', ->
     it 'has fired', ->
-        engine.
+        engine.get_rects().should.equal 4
 
 # describe 'response_list', ->
 #     it 'should have 4 actions', ->
