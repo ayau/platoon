@@ -11,7 +11,8 @@ option '-v', '--verbose', 'output all child process outputs'
 
 # Tasks
 task 'build', 'Build all resources', (options) ->
-  prepare options, dir.server, Patterns.Coffee
+  prepare options, dir.serverStatic, Patterns.Copy, ->
+    prepare options, dir.server, Patterns.Coffee
   prepare options, dir.static, Patterns.Copy, ->
     prepare options, dir.client, Patterns.Coffee
 
@@ -28,9 +29,12 @@ task 'run', 'Run the server', (options) ->
 # Directories
 dir =
   server:
-    source: 'server/source'
-    destination: 'server/compiled'
+    source: 'server/source/scripts'
+    destination: 'server/compiled/scripts'
     test: 'server/test'
+  serverStatic:
+    source: 'server/source/static'
+    destination: 'server/compiled'
   client:
     source: 'client/source/scripts'
     destination: 'client/compiled/scripts'
