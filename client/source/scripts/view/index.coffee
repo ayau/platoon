@@ -1,10 +1,10 @@
 $ -> 
   #CONSTANTS
-  canvas   = null
-  ctx = null
   INTERVAL = 33 #rate of redraw
   PLAYERWIDTH = 50
   PLAYERHEIGHT = 50
+  BULLETWIDTH = 10
+  BULLETHEIGHT = 10
   VIEWSCALE = 10
 
   class Renderer
@@ -35,6 +35,13 @@ $ ->
         @ctx.fillRect player.x, player.y, PLAYERWIDTH, PLAYERHEIGHT
         @ctx.load
 
+    bulletDrawer = ->
+      draw = (bullet) -> 
+        @ctx.save
+        @ctx.fillStyle = '#777'
+        @ctx.fillRect bullet.x, bullet.y, BULLETWIDTH, BULLETHEIGHT
+        @ctx.load
+
     drawBackground = ->
       @ctx.save
       @ctx.fillStyle = '#5c5'
@@ -46,9 +53,10 @@ $ ->
       players = []
       bullets.push(new uiPiece(bullet, "bullet")) for bullet in model.bullets
       players.push(new uiPiece(player, "player")) for player in model.players
-      return 
+      return {
         bullets: bullets
         player: players
+      }
 
     class UiPiece
       constructor: (piece, type) ->
