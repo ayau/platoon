@@ -21,6 +21,7 @@ class exports.Engine
     RES_PLAYER_FIRED    = 'player_fired'
     RES_PLAYER_COLLIDED = 'player_collided'
     RES_PLAYER_HIT      = 'player_hit'
+    RES_ERROR           = 'error'
 
     responses = null
 
@@ -28,6 +29,8 @@ class exports.Engine
     bullets      = null
     tree         = null
     bullet_count = 0
+
+    rects = null
 
     class Rect
         constructor: (x, y, w, h, id, type)->
@@ -48,6 +51,7 @@ class exports.Engine
         isOutOfBounds: ->
             null
 
+
     class Player extends Sprite
         constructor: (id, x, y)->
             @id = id
@@ -58,6 +62,7 @@ class exports.Engine
             @health    = PLAYER_HEALTH
             @isAlive   = true
             @rect      = new Rect(@x, @y, @w, @h, TYPE_PLAYER, @id)
+            rects.push(@rect)
         move : (dx, dy) ->
             @x = @x + dx
             @y = @y + dy
@@ -79,14 +84,15 @@ class exports.Engine
             @dx        = Math.floor(v * Math.cos(angle))
             @dy        = Math.floor(v * Math.sin(angle))
             @rect      = new Rect(@x, @y, @w, @h, TYPE_BULLET, @id)
+            rects.push(@rect)
         move : ->
             @x = @x + @dx
             @y = @y + @dy
         destroy: ->
-            id = bullets.indexOf(@)
-            if id != -1
-                bullets.splice(id, 1)
-            console.log 'bullet_destroyed'
+            delete bullets[@id]
+            rid = rects.indexOf(@rect)
+            if rid != -1
+                rects.splice(rid, 1)
 
         isOutOfBounds: ->
             @destroy()
@@ -129,6 +135,7 @@ class exports.Engine
         # Holds all players
         players = new Object()
         bullets = new Object()
+        rects = []
         responses = []
 
         bounds = new Rect(0, 0, WIDTH, HEIGHT)
@@ -137,6 +144,12 @@ class exports.Engine
         # console.log tree.retrieve(r)
         # setInterval(cron, 1000)
 
+    update_tree = ->
+        tree.clear()
+        tree.insert(rects)
+
+    get_rects : ->
+        return rects.length
 
     # API ----------------------------------------------------------------------------------------
     player_create : (id, x, y) ->
@@ -144,7 +157,7 @@ class exports.Engine
             return {'response': RES_ERROR, 'payload': {'error': 'player already exists'}}
         p = new Player id, x, y
         players[id] = p
-        tree.insert(p.rect)
+        update_tree()
         return {'response': RES_PLAYER_CREATED, 'paylaod': {'id': id, 'x': x, 'y': y}}
 
     player_move : (id, dx, dy) ->
@@ -174,9 +187,13 @@ class exports.Engine
         p = players[id]
         b = p.fire(angle, v)
         bullets[bullet_count] = b
-        tree.insert(b.rect)
+        update_tree()
         bullet_count = bullet_count + 1
         return {'response': RES_PLAYER_FIRED, 'payload': {'id': id, 'x': x, 'y', y, 'bullet_id': b.id}}
+
+    get_state: () ->
+        players: players
+        bullets: bullets
 
     #runs every interval
     update : ->

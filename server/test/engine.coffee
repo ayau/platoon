@@ -4,25 +4,33 @@ require('chai').should()
 engine = new Engine()
 engine.init()
 
-# describe 'player1', ->
-#     it 'should be created', ->
-#         engine.player_create(1, 100, 100).should.equal true
+describe 'player1', ->
+    it 'should be created', ->
+        engine.player_create(1, 100, 100).should.equal true
 
-# describe 'player2', ->
-#     it 'should be created', ->
-#         engine.player_create(2, 200, 200).should.equal true
+describe 'player2', ->
+    it 'should be created', ->
+        engine.player_create(2, 200, 200).should.equal true
 
-# describe 'player3', ->
-#     it 'should be created', ->
-#         engine.player_create(3, 150, 150).should.equal true
+describe 'player3', ->
+    it 'should be created', ->
+        engine.player_create(3, 150, 150).should.equal true
 
-# describe 'player1', ->
-#     it 'should not be created', ->
-#         engine.player_create(1, 100, 100).should.equal false
+describe 'player1', ->
+    it 'should not be created', ->
+        engine.player_create(1, 100, 100).should.equal false
 
-# describe 'player1', ->
-#     it 'should be moved', ->
-#         engine.player_move(1, 20, 20).should.equal true
+describe 'player1', ->
+    it 'should be moved', ->
+        engine.player_move(1, 20, 20).should.equal true
+
+describe 'tree', ->
+    it 'is of size 3', ->
+        engine.get_rects().should.equal 3
+
+describe 'player', ->
+    it 'has fired', ->
+        engine.
 
 # describe 'response_list', ->
 #     it 'should have 4 actions', ->
