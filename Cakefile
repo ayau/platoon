@@ -11,13 +11,13 @@ option '-v', '--verbose', 'output all child process outputs'
 
 # Tasks
 task 'build', 'Build all resources', (options) ->
-  prepare options, dir.serverStatic, Patterns.Copy, ->
-    prepare options, dir.server, Patterns.Coffee
+  prepare options, dir.serverStatic, Patterns.Copy
+  prepare options, dir.server, Patterns.Coffee
   prepare options, dir.static, Patterns.Copy, ->
     prepare options, dir.client, Patterns.Coffee
 
 task 'run', 'Run the server', (options) ->
-  process = spawn 'node', ['server/compiled/server.js']
+  process = spawn 'node', ['server/compiled/scripts/server.js']
   unless options.silent
     process.stdout.setEncoding('utf8')
     process.stdout.on 'data', (data) ->
@@ -34,7 +34,7 @@ dir =
     test: 'server/test'
   serverStatic:
     source: 'server/source/static'
-    destination: 'server/compiled'
+    destination: 'server/compiled/static'
   client:
     source: 'client/source/scripts'
     destination: 'client/compiled/scripts'

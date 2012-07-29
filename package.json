@@ -21,6 +21,7 @@
   "scripts": {
     "prepublish": "npm prune",
     "test"    : "cake -tsv build",
-    "install" : "cake -s build"
+    "install" : "cake -s build",
+    "start"   : "cake -s run"
   }
 }
