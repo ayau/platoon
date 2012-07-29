@@ -11,6 +11,8 @@ option '-v', '--verbose', 'output all child process outputs'
 
 # Tasks
 task 'build', 'Build all resources', (options) ->
+  prepare options, dir.server, Patterns.Coffee
+  prepare options, dir.client, Patterns.Coffee
 
 # Directories
 dir =
@@ -18,6 +20,10 @@ dir =
     source: 'server/source'
     destination: 'server/compiled'
     test: 'server/test'
+  client:
+    source: 'client/source/scripts'
+    destination: 'client/compiled/scripts'
+    test: 'client/test'
 
 colors =
   dark:
