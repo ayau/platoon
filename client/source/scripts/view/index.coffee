@@ -1,42 +1,56 @@
 $ -> 
     #CONSTANTS
     canvas   = null
-    HEIGHT   = 500
-    WIDTH    = 800
-    INTERVAL = 20 #rate of redraw (if invalidate is called)
-
-    #variables
     ctx = null
-
-    # Holds all players
-    players = []
-
-    # Player Object
-    Player = (x, y)->
-        @x      = x || 50
-        @y      = y || 50
-        @width  = 3
-        @height = 3
-        @color  = '#1B56E0'
-        draw = (ctx)->
-            ctx.fillStyle = @color
-            ctx.fillRect @x, @y, @width, @height
-
-    create_player = (x, y) ->
-        p = new Player x, y
-        players.push(p)
+    HEIGHT   = 500 #Canvas sizes
+    WIDTH    = 800
+    INTERVAL = 33 #rate of redraw
+    PLAYERWIDTH = 50
+    PLAYERHEIGHT = 50
+    VIEWSCALE = 10
 
     init = ->
         canvas = document.getElementById('canvas')
         ctx = canvas.getContext('2d')
-        setInterval(draw, INTERVAL)
+        setInterval(redraw, INTERVAL)
 
-    draw = (state) ->
+        redraw = ->
             clear(ctx)
-            p.draw(ctx) for p in state.players
+            uiPieces = toUiPieces(model.clone)
+            #Painters algorithm for layer/render ordering
+            drawBackground()
+            drawPiece(p) for p in uipieces.players
+            drawPiece(p) for p in uipieces.bullets
 
-    socket = io.connect 'http://localhost:8080'
-    socket.on 'event', (data) ->
-      console.log data
-      socket.emit 'log',
-        my: 'data'
+    drawPiece = (piece) ->
+        drawer = getDrawer(piece)
+        drawer.draw(piece)
+
+    getDrawer = (piece) ->
+        return playerDrawer if piece instanceof uiplayer
+        #add every kind of drawer here (lack of Strategy pattern makes me sad.)
+
+    playerDrawer = ->
+        draw = (player) -> 
+            ctx.save
+            ctx.fillStyle = '#005500'
+            ctx.fillRect player.x, player.y, PLAYERWIDTH, PLAYERHEIGHT
+            ctx.load
+
+    drawBackground = ->
+        ctx.save
+        ctx.fillStyle = '#5c5'
+        ctx.fillRect 0, 0, WIDTH, HEIGHT
+        ctx.load
+
+    toUiPieces = (model) ->
+        bullets = []
+        players = []
+        bullets.push(new uiBullet(bullet, "bullet")) for bullet in model.bullets
+        players.push(new uiPlayer(player, "player")) for player in model.players
+
+    class uiPiece
+        constructor: (piece, class) ->
+            x = math.floor(piece.x / VIEWSCALE)
+            y = math.floor(piece.y / VIEWSCALE)
+            class = class
