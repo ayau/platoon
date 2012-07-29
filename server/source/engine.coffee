@@ -8,10 +8,27 @@ INTERVAL      = 33      #frame rate
 PLAYER_WIDTH  = 100
 PLAYER_HEIGHT = 100
 
+players = null
+bullets = null
+tree    = null
 
-# Holds all players
-players = new Object()
-bullets = []
+init = ->
+    console.log 'Game engine started'
+    # Holds all players
+    players = new Object()
+    bullets = []
+
+    bounds = new Rectangle(0, 0, WIDTH, HEIGHT);
+    tree   = new QuadTree(bounds, false, 7);
+
+    create_player(1,100, 100)
+    p1 = players[1]
+    p1.move(30,30)
+
+    p1.fire(p1.x, p1.y, 0.3, 1000)
+    b1 = bullets[0]
+    
+    setInterval(cron, 1000)
 
 class Sprite
     constructor: ->
