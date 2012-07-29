@@ -23,7 +23,7 @@ Player = (x, y)->
         ctx.fillRect @x, @y, @width, @height
 
 create_player = (x, y) ->
-    p = new Player (x, y)
+    p = new Player x, y
     players.push(p)
     invalidate()
 
@@ -48,5 +48,5 @@ draw = ->
 socket = io.connect 'http://localhost:8080'
 socket.on 'event', (data) ->
   console.log data
-  socket.emit 'my other event',
+  socket.emit 'log',
     my: 'data'
