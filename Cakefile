@@ -48,7 +48,7 @@ colors =
 
 out =
   format: (action, file, message) ->
-    "#{(new Date).toLocaleTimeString()} - #{action} #{file}" + if message then "\n#{message}".trim() else ''
+    "#{(new Date).toLocaleTimeString()} - #{action} #{file}" + if message then "\n#{message.trim()}" else ''
   log: (args...) ->
     console.log @format args...
   err: (args...) ->
@@ -82,7 +82,7 @@ prepare = (options, dir, Pattern, next) ->
       callbacks =
         created: (error, stdin, stderr) ->
           if error
-            out.errors @destination, error
+            out.errors @destination, stderr
           else
             unless options.silent?
               out.create @destination, if options.verbose? then stdin
@@ -94,7 +94,7 @@ prepare = (options, dir, Pattern, next) ->
                   out.passed @destination, if options.verbose? then stdin
         updated: (error, stdin, stderr) ->
           if error
-            out.errors @destination, error
+            out.errors @destination, stderr
           else
             out.update @destination
             if options.test?
