@@ -2,9 +2,10 @@ $ ->
 
   socket = io.connect "#{window.location.href}"
   socket.on 'connected', (data) ->
-    setModel data.model
+    setModel data.contents
   socket.on 'update', (data) ->
-    setModel data.model
+    setModel data.contents
+    console.log(data.contents)
 
   $('body').on 'keydown', (event) ->
     switch event.keyCode
@@ -28,7 +29,6 @@ $ ->
     x: 800
     y: 500
   @view = new Renderer(canvas, @model)
-
 
   setModel = (model) ->
     @model = model
