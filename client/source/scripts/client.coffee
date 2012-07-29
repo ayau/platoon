@@ -15,7 +15,7 @@ Player = (x, y)->
     @color  = '#1B56E0'
 
 create_player = (x, y) ->
-    p = new Player (x, y)
+    p = new Player x, y
     players.push(p)
     #invalidate()
 
@@ -26,5 +26,5 @@ init = ->
 socket = io.connect 'http://localhost:8080'
 socket.on 'event', (data) ->
   console.log data
-  socket.emit 'my other event',
+  socket.emit 'log',
     my: 'data'
