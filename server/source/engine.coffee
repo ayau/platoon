@@ -1,7 +1,10 @@
 #CONSTANTS
-HEIGHT   = 5000
-WIDTH    = 8000
-INTERVAL = 33 #frame rate
+HEIGHT        = 5000
+WIDTH         = 8000
+INTERVAL      = 33      #frame rate
+
+PLAYER_WIDTH  = 100
+PLAYER_HEIGHT = 100
 
 # Holds all players
 players = new Object()
@@ -9,7 +12,7 @@ bullets = []
 
 class Sprite
     constructor: ->
-        @x = 100
+        @x = 100 
         @y = 100
 
     isOutOfBounds: ->
@@ -20,8 +23,8 @@ class Player
         @client_id = id
         @x         = x ? 100 #default position
         @y         = y ? 100
-        @width     = 3
-        @height    = 3
+        @health    = 1000
+        @isAlive   = true
     move : (dx, dy) ->
         @x = @x + dx
         @y = @y + dy
@@ -31,13 +34,14 @@ class Player
 
 class Bullet
     constructor: (owner, x, y, angle, v)->
-        @owner = owner
-        @x     = x
-        @y     = y
-        @angle = angle
-        @v     = v
-        @dx    = Math.floor(v * Math.cos(angle))
-        @dy    = Math.floor(v * Math.sin(angle))
+        @owner  = owner
+        @x      = x
+        @y      = y
+        @angle  = angle
+        @v      = v
+        @damage = 300
+        @dx     = Math.floor(v * Math.cos(angle))
+        @dy     = Math.floor(v * Math.sin(angle))
     move : ->
         @x = @x + @dx
         @y = @y + @dy
@@ -53,6 +57,7 @@ class Bullet
 
 validate = (sprite) ->
     isOutOfBounds(sprite)
+    hasCollided(sprite)
 
 
 #Checks to see if piece is out of bounds
@@ -73,6 +78,14 @@ isOutOfBounds = (sprite) ->
 
     if !valid
         sprite.isOutOfBounds()
+
+#Check to see if sprite has collided with something else
+hasCollided = (sprite) ->
+    return true
+    # if sprite instanceof Player
+    #     console.log 'You hit a player'
+    # if sprite instanceof Bullet
+    #     console.log 'You hit a bullet'
 
 create_player = (id, x, y) ->
     p = new Player id, x, y
