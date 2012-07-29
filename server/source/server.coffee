@@ -1,14 +1,16 @@
-io   = require('socket.io').listen(1337)
-http = require('http')
+{Server} = require('node-static');
+http   = require('http')
+fs     = require('fs')
+io     = require('socket.io')
 
-io.sockets.on 'connection', (socket) ->
-    socket.emit('news', { hello: 'world' })
-    socket.on 'my other event', (data) ->
-        console.log(data)
+io.listen(8080).sockets.on 'connection', (socket) ->
+  socket.emit 'event',
+    hello: 'world'
+  socket.on 'log', (data) ->
+    console.log data
 
-(http.createServer (req, res) ->
-    res.writeHead(200, 'Content-Type': 'text/plain')
-    res.end('Hello World\n')
-).listen(5000, '127.0.0.1')
-
-console.log 'Server running at http://127.0.0.1:1337/'
+file = new Server './client/compiled'
+server = http.createServer (request, response) ->
+  request.addListener 'end', ->
+    file.serve request, response
+server.listen(8000)
