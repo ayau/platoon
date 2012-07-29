@@ -1,5 +1,5 @@
 #CONSTANTS
-window.INTERVAL = 33 #rate of redraw
+window.INTERVAL = 500 #rate of redraw
 window.PLAYERWIDTH = 50
 window.PLAYERHEIGHT = 50
 window.BULLETWIDTH = 10
