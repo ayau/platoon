@@ -428,4 +428,4 @@ if ( typeof Object.getPrototypeOf !== "function" ) {
 }
 */
 
-}(window));
+}(exports));

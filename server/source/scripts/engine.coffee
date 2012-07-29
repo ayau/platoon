@@ -1,4 +1,4 @@
-require('../static/QuadTree')
+{QuadTree} = require('../../source/static/QuadTree')
 
 #CONSTANTS
 HEIGHT        = 5000
@@ -8,12 +8,38 @@ INTERVAL      = 33      #frame rate
 PLAYER_WIDTH  = 100
 PLAYER_HEIGHT = 100
 
+players = null
+bullets = null
+tree    = null
 
-# Holds all players
-players = {}
-bullets = []
+init = ->
+    console.log 'Game engine started'
+    # Holds all players
+    players = new Object()
+    bullets = []
 
-for key, value of players
+    bounds = new Rect(0, 0, WIDTH, HEIGHT);
+    tree   = new QuadTree(bounds, false, 7);
+
+    create_player(1,100, 100)
+    r = new Rect(100, 100, 100, 100)
+    tree.insert(r)
+    p1 = players[1]
+    p1.move(30,30)
+
+    p1.fire(p1.x, p1.y, 0.3, 1000)
+    b1 = bullets[0]
+    
+    
+    console.log tree.retrieve(r)
+    setInterval(cron, 1000)
+
+class Rect
+    constructor: (x, y, w, h)->
+        @x = x
+        @y = y
+        @w = w
+        @h = h
 
 class Sprite
     constructor: ->
@@ -96,17 +122,7 @@ create_player = (id, x, y) ->
     p = new Player id, x, y
     players[id] = p
 
-init = ->
-    # console.log 'Game engine started'
-    create_player(1,100, 100)
-    p1 = players[1]
-    p1.move(30,30)
-
-    p1.fire(p1.x, p1.y, 0.3, 1000)
-    b1 = bullets[0]
-    
-    setInterval(cron, 1000)
-
+#runs every interval
 cron = ->
     move_bullet(b) for b in bullets
     log()
