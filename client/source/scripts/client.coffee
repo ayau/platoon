@@ -38,11 +38,11 @@ init = ->
 invalidate = ->
     canvas_valid = false
 
-draw = ->
+draw = (state) ->
     if !canvas_valid
         clear(ctx)
 
-        p.draw(ctx) for p in players
+        p.draw(ctx) for p in state.players
 
 
 socket = io.connect 'http://localhost:8080'
