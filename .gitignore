@@ -16,3 +16,6 @@ npm-debug.log
 
 *.sublime-project
 *.sublime-workspace
+
+client/compiled
+server/compiled
