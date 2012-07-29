@@ -2,10 +2,8 @@
 canvas   = null
 HEIGHT   = 500
 WIDTH    = 800
-INTERVAL = 20 #rate of redraw (if invalidate is called)
 
 #variables
-canvas_valid = false
 ctx = null
 
 # Holds all players
@@ -32,13 +30,7 @@ init = ->
     canvas = document.getElementById('canvas')
     ctx = canvas.getContext('2d')
 
-    setInterval(draw, INTERVAL)
-
-
 invalidate = ->
-    canvas_valid = false
-
-draw = ->
     if !canvas_valid
         clear(ctx)
 
