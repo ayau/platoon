@@ -10,6 +10,9 @@ window.SCALE = CTILESIZE/STILESIZE
 CMAPWIDTH = SMAPWIDTH * window.SCALE
 CMAPHEIGHT = SMAPHEIGHT * window.SCALE
 
+cameraOffsetX = 0 #default offset if player is not initialized
+cameraOffsetY = 0
+
 class window.Renderer
   constructor: (canvas, images, model, socketid) ->
     @width = canvas.x
@@ -21,6 +24,9 @@ class window.Renderer
 
   redraw: =>
     @myPlayerPosition = @getMyPlayerPosition() #We need this to move the viewport
+    #REALLY UGLY (but it works) Refactor?
+    cameraOffsetX = @width/2 - @myPlayerPosition.x * window.SCALE
+    cameraOffsetY = @height/2 - @myPlayerPosition.y * window.SCALE
     @uiPieces = @toUiPieces @model
     @setupExtraFeatures()
 
@@ -97,7 +103,8 @@ toWorldCoords = (tileLocation) -> #converts from grid/tile coordinates to world 
   {x:tileLocation.x*CTILESIZE, y:tileLocation.y*CTILESIZE}
 
 #converts from world coordinates to view/canvas coordinates
-toViewPortCoords = (viewPortLocation) -> viewPortLocation 
+toViewPortCoords = (viewPortLocation) ->
+  {x: viewPortLocation.x + cameraOffsetX, y: viewPortLocation.y + cameraOffsetY} 
 
 #converts from grid/tile coordinates to view/canvas coordinates 
 toWorldView = (loc) -> toViewPortCoords toWorldCoords loc
