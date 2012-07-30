@@ -13,3 +13,6 @@ class window.Sockets
   fire: (key) =>
     @socket.emit 'move',
       key: key
+
+  getSocketId: =>
+    @socket.socket.sessionid

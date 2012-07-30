@@ -1,23 +1,28 @@
 #CONSTANTS
 window.INTERVAL = 100  #rate of redraw
 
-SWORLDWIDTH = 1500 #Server coordinate w
-SWORLDHEIGHT = 1000 #Server coordinate h
+SMAPWIDTH = 1500 #Server coordinate w
+SMAPHEIGHT = 1000 #Server coordinate h
 STILESIZE = 50 #Server tile size in server coordinates
-SPRITESIZE = 32 #Sprite size
+CTILESIZE = 32 #Client tile size in pixels
+window.SCALE = CTILESIZE/STILESIZE
 
-window.SCALE = SPRITESIZE/STILESIZE
+CMAPWIDTH = SMAPWIDTH * window.SCALE
+CMAPHEIGHT = SMAPHEIGHT * window.SCALE
 
 class window.Renderer
-  constructor: (canvas, images, model) ->
+  constructor: (canvas, images, model, socketid) ->
     @width = canvas.x
     @height = canvas.y
     @ctx = canvas.element
     @model = model
+    @socketid = socketid
     @images = images
   redraw: =>
+    @myPlayerPosition = @getMyPlayerPosition()
+    console.log(@myPlayerPosition)
     @ctx.save
-    @ctx.fillStyle = '#ccc'
+    @ctx.fillStyle = '#000'
     @ctx.fillRect 0, 0, @width, @height
     @ctx.load
     uiPieces = @toUiPieces @model
@@ -40,13 +45,13 @@ class window.Renderer
   drawPlayer: (player) ->
     @ctx.save
     @ctx.fillStyle = '#005500'
-    @ctx.fillRect player.x, player.y, SPRITESIZE, SPRITESIZE
+    @ctx.fillRect player.x, player.y, CTILESIZE, CTILESIZE
     @ctx.load
 
   drawBullet: (bullet) ->
     @ctx.save
     @ctx.fillStyle = '#777'
-    @ctx.fillRect bullet.x, bullet.y, SPRITESIZE, SPRITESIZE
+    @ctx.fillRect bullet.x, bullet.y, CTILESIZE, CTILESIZE
     @ctx.load
 
   #TODO: Refactor me (and make me less broken) plz!
@@ -56,16 +61,16 @@ class window.Renderer
   drawWater: (water) ->
     @ctx.save
     @ctx.fillStyle = '#00f'
-    @ctx.fillRect water[0] * SPRITESIZE, water[1] * SPRITESIZE, SPRITESIZE, SPRITESIZE
+    @ctx.fillRect water[0] * CTILESIZE, water[1] * CTILESIZE, CTILESIZE, CTILESIZE
     @ctx.load
 
   drawBackground: ->
-    for col in [0..SWORLDWIDTH/STILESIZE]
-      for row in [0..SWORLDHEIGHT/STILESIZE]
+    for col in [0..SMAPWIDTH/STILESIZE]
+      for row in [0..SMAPHEIGHT/STILESIZE]
         drawSpriteOnGrid @ctx, @images.grass, col, row
 
   drawSpriteOnGrid = (ctx, sprite, x, y) -> #do I pass in ctx like this? Better way?
-    ctx.drawImage sprite, x*SPRITESIZE, y*SPRITESIZE, SPRITESIZE, SPRITESIZE
+    ctx.drawImage sprite, x*CTILESIZE, y*CTILESIZE, CTILESIZE, CTILESIZE
 
   toUiPieces: (model) -> #Build a collection of UIPieces from the Model
     if model.content isnt "noModel"
@@ -85,3 +90,18 @@ class window.Renderer
     constructor: (piece) ->
       @x = Math.floor(piece.x * window.SCALE)
       @y = Math.floor(piece.y * window.SCALE)
+
+  getMyPlayerPosition: ->
+    if @model.content isnt "noModel"
+      for key, player of @model.content.players
+        if (player.id == @socketid)
+          return {} = 
+            x: player.x
+            y: player.y
+      return {} = #If you're not on the map for any reason, center in the middle
+        x: SMAPWIDTH * window.SCALE / 2
+        y: SMAPHEIGHT * window.SCALE / 2
+    else
+      return {} = #If there is no model defined...
+          x: SMAPWIDTH * window.SCALE / 2
+          y: SMAPHEIGHT * window.SCALE / 2
