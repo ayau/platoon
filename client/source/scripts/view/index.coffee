@@ -9,11 +9,12 @@ SPRITESIZE = 32 #Sprite size
 window.SCALE = SPRITESIZE/STILESIZE
 
 class window.Renderer
-  constructor: (canvas, model) ->
+  constructor: (canvas, images, model) ->
     @width = canvas.x
     @height = canvas.y
     @ctx = canvas.element
     @model = model
+    @images = images
   redraw: =>
     @ctx.clearRect(0, 0, @width, @height)
     uiPieces = @toUiPieces @model
@@ -47,10 +48,7 @@ class window.Renderer
 
   #TODO: Refactor me (and make me less broken) plz!
   drawTrees: (tree) ->
-    @ctx.save
-    @ctx.fillStyle = '#0f0'
-    @ctx.fillRect tree[0] * SPRITESIZE, tree[1] * SPRITESIZE, SPRITESIZE, SPRITESIZE
-    @ctx.load
+    drawSpriteOnGrid @ctx, @images.tree, tree[0], tree[1]
 
   drawWater: (water) ->
     @ctx.save
@@ -59,10 +57,12 @@ class window.Renderer
     @ctx.load
 
   drawBackground: ->
-    @ctx.save
-    @ctx.fillStyle = '#5c5'
-    @ctx.fillRect 0, 0, SPRITESIZE * SWORLDWIDTH/STILESIZE, SPRITESIZE * SWORLDHEIGHT/STILESIZE
-    @ctx.load
+    for col in [0..SWORLDWIDTH/STILESIZE]
+      for row in [0..SWORLDHEIGHT/STILESIZE]
+        drawSpriteOnGrid @ctx, @images.grass, col, row
+
+  drawSpriteOnGrid = (ctx, sprite, x, y) -> #do I pass in ctx like this? Better way?
+    ctx.drawImage sprite, x*SPRITESIZE, y*SPRITESIZE, SPRITESIZE, SPRITESIZE
 
   toUiPieces: (model) ->
     if model.content isnt "noModel"
