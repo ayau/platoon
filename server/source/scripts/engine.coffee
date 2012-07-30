@@ -159,7 +159,7 @@ class exports.Engine
         p = new Player id, x, y
         players[id] = p
         update_tree()
-        return {'response': RES_PLAYER_CREATED, 'paylaod': {'id': id, 'x': x, 'y': y}}
+        return {'response': RES_PLAYER_CREATED, 'payload': {'id': id, 'x': x, 'y': y}}
 
     player_move : (id, dx, dy) ->
         if players.hasOwnProperty(id)
@@ -171,18 +171,18 @@ class exports.Engine
                 dx     = new_dx
                 dy     = new_dy
                 # for now, don't move player if player is hacking
-                return {'response': RES_ERROR, 'paylaod': {'error': 'player is moving faster than expected'}}
+                return {'response': RES_ERROR, 'payload': {'error': 'player is moving faster than expected'}}
             p.move(dx, dy)
             r = p.rect
             items =  tree.retrieve(r)
             for item in items
                 if item != r
                     if item.type == TYPE_BULLET
-                        return {'response': RES_PLAYER_HIT, 'paylaod': {'id': id, 'x': p.x, 'y': p.y, 'bullet_id': item.id}}
+                        return {'response': RES_PLAYER_HIT, 'payload': {'id': id, 'x': p.x, 'y': p.y, 'bullet_id': item.id}}
                     else
                         return {'response': RES_PLAYER_COLLIDED, 'payload': {'id': id, 'x': p.x, 'y': p.y, 'player_id': item.id}}
             return {'response': RES_PLAYER_MOVED, 'payload': {'id': id, 'x': p.x, 'y': p.y}}
-        return {'response': RES_ERROR, 'paylaod': {'error': 'player not found'}}
+        return {'response': RES_ERROR, 'payload': {'error': 'player not found'}}
 
     player_fire : (id, angle, v) ->
         if bullets.hasOwnProperty(bullet_count)
@@ -194,12 +194,12 @@ class exports.Engine
             update_tree()
             bullet_count = bullet_count + 1
             return {'response': RES_PLAYER_FIRED, 'payload': {'id': id, 'x': p.x, 'y': p.y, 'bullet_id': b.id}}
-        return {'response': RES_ERROR, 'paylaod': {'error': 'player not found'}}
+        return {'response': RES_ERROR, 'payload': {'error': 'player not found'}}
 
     player_destroy: (id) ->
         if players.hasOwnProperty(id)
             delete players[id]
-            return {'response': RES_PLAYER_DESTROYED 'paylaod': {'id': id}}
+            return {'response': RES_PLAYER_DESTROYED 'payload': {'id': id}}
 
     get_state: () ->
         players: players
