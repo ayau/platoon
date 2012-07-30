@@ -1,5 +1,5 @@
 #CONSTANTS
-window.INTERVAL = 500  #rate of redraw
+window.INTERVAL = 33  #rate of redraw
 
 SWORLDWIDTH = 1500 #Server coordinate w
 SWORLDHEIGHT = 1000 #Server coordinate h
