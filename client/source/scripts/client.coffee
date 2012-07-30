@@ -56,5 +56,6 @@ $ ->
 
   sources = #define all of the required graphics here
     grass: "/images/grass.png"
+    tree: "/images/tree.png"
  
   loadImages(sources, setupView) #load the images and run setupView on callback
