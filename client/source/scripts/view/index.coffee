@@ -17,26 +17,16 @@ class window.Renderer
     uiPieces = @toUiPieces @model
     #Painters algorithm for layer/render ordering
     @drawBackground()
-    @drawPiece(p) for p in uiPieces.players
-    @drawPiece(p) for p in uiPieces.bullets
+    @drawPlayer(p) for p in uiPieces.players
+    @drawBullet(p) for p in uiPieces.bullets
 
-  drawPiece: (piece) ->
-    drawer = @drawers[piece.type]
-    drawer.draw(piece)
-
-  drawers:
-    player: @playerDrawer
-    bullet: @bulletDrawer
-
-  playerDrawer: ->
-    draw = (player) ->
+  drawPlayer: (player) ->
       @ctx.save
       @ctx.fillStyle = '#005500'
       @ctx.fillRect player.x, player.y, PLAYERWIDTH, PLAYERHEIGHT
       @ctx.load
 
-  bulletDrawer: ->
-    draw = (bullet) ->
+  drawBullet: (bullet) ->
       @ctx.save
       @ctx.fillStyle = '#777'
       @ctx.fillRect bullet.x, bullet.y, BULLETWIDTH, BULLETHEIGHT
@@ -49,13 +39,11 @@ class window.Renderer
     @ctx.load
 
   toUiPieces: (model) ->
-    console.log(model.content)
-    if model.content is not {}
-      console.log("Model.content is not {}")
-      bullets = model.content.bullets
-      players = model.content.players
-      bullets.push(new uiPiece(bullet, "bullet")) for bullet in model.content.bullets
-      players.push(new uiPiece(player, "player")) for key, player of model.content.players
+    if model.content isnt {}
+      bullets = []
+      players = []
+      bullets.push(new UiPiece(bullet, "bullet")) for bullet in model.content.bullets
+      players.push(new UiPiece(player, "player")) for key, player of model.content.players
       return {} =
         bullets: bullets
         players: players
@@ -67,8 +55,8 @@ class window.Renderer
 
   class UiPiece
     constructor: (piece, type) ->
-      @x = math.floor(piece.x / VIEWSCALE)
-      @y = math.floor(piece.y / VIEWSCALE)
+      @x = Math.floor(piece.x / VIEWSCALE)
+      @y = Math.floor(piece.y / VIEWSCALE)
       @type = type
 
 
