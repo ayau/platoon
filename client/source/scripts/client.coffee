@@ -1,11 +1,18 @@
 $ ->
+  
+  @model =
+    content: {hi: "there"}
+  canvas =
+    element: document.getElementById('canvas').getContext('2d')
+    x: 800
+    y: 500
+  @view = new Renderer(canvas, @model)
 
   socket = io.connect "#{window.location.href}"
   socket.on 'connected', (data) ->
     setModel data.contents
   socket.on 'update', (data) ->
     setModel data.contents
-    console.log(data.contents)
 
   $('body').on 'keydown', (event) ->
     switch event.keyCode
@@ -23,14 +30,9 @@ $ ->
           key: "right"
   $('body').on 'keyup', (event) ->
 
-  @model = {}
-  canvas =
-    element: document.getElementById('canvas').getContext('2d')
-    x: 800
-    y: 500
-  @view = new Renderer(canvas, @model)
-
-  setModel = (model) ->
-    @model = model
+  setModel = (model) =>
+    @model.content = model
+    console.log("Model set by server:")
+    console.log(@model)
 
   setInterval @view.redraw, window.INTERVAL

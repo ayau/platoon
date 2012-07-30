@@ -199,7 +199,7 @@ class exports.Engine
     player_destroy: (id) ->
         if players.hasOwnProperty(id)
             delete players[id]
-            return {'response': RES_PLAYER_DESTROYED 'paylaod': {'id': id}}
+            return {'response': RES_PLAYER_DESTROYED, 'payload': {'id': id}}
 
     get_state: () ->
         players: players

@@ -1,5 +1,5 @@
 #CONSTANTS
-window.INTERVAL = 500 #rate of redraw
+window.INTERVAL = 2000 #rate of redraw
 window.PLAYERWIDTH = 50
 window.PLAYERHEIGHT = 50
 window.BULLETWIDTH = 10
@@ -14,7 +14,7 @@ class window.Renderer
     @model = model
   redraw: =>
     @ctx.clearRect(0, 0, @width, @height)
-    uiPieces = @toUiPieces @model #clone the model and convert them to uiPieces
+    uiPieces = @toUiPieces @model
     #Painters algorithm for layer/render ordering
     @drawBackground()
     @drawPiece(p) for p in uiPieces.players
@@ -49,11 +49,13 @@ class window.Renderer
     @ctx.load
 
   toUiPieces: (model) ->
-    if model is not {}
-      bullets = model.bullets
-      players = model.players
-      bullets.push(new uiPiece(bullet, "bullet")) for bullet in model.bullets
-      players.push(new uiPiece(player, "player")) for key, player of model.players
+    console.log(model.content)
+    if model.content is not {}
+      console.log("Model.content is not {}")
+      bullets = model.content.bullets
+      players = model.content.players
+      bullets.push(new uiPiece(bullet, "bullet")) for bullet in model.content.bullets
+      players.push(new uiPiece(player, "player")) for key, player of model.content.players
       return {} =
         bullets: bullets
         players: players
