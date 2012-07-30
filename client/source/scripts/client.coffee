@@ -7,32 +7,28 @@ $ ->
 
   @keyController = new KeyController(@sockets)
 
-  setupView = (images) =>
+  setupView = (images) => #When run this initialises the view and the canvas
     canvas =
       element: document.getElementById('canvas').getContext('2d')
       x: 800
       y: 500
     @view = new Renderer(canvas, images, @model)
-
     setInterval @view.redraw, window.INTERVAL
 
-  loadImages = (sources, callback) ->
+  loadImages = (sources, callback) -> #This will load the images required by the canvas and then run setupView when done
     images = {}
     loadedImages = 0
     numImages = 0
-     
-    # get num of sources
     for src of sources
       numImages++
     for src of sources
       images[src] = new Image()
       images[src].onload = ->
         callback images  if ++loadedImages >= numImages
-
       images[src].src = sources[src]
 
   sources = #define all of the required graphics here
     grass: "/images/grass.png"
     tree: "/images/tree.png"
  
-  loadImages(sources, setupView) #load the images and run setupView on callback
+  loadImages(sources, setupView) 
