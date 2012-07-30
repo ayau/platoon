@@ -1,5 +1,5 @@
 #CONSTANTS
-window.INTERVAL = 500  #rate of redraw
+window.INTERVAL = 50  #rate of redraw
 
 SMAPWIDTH = 1500 #Server coordinate w
 SMAPHEIGHT = 1000 #Server coordinate h
@@ -38,22 +38,10 @@ class window.Renderer
     @uiPieces.features.trees = trees
     @uiPieces.features.water = water
 
-  drawPlayer: (player) ->
-    canvasCoords = getLocation(player)
-    @drawRect(canvasCoords, '#050')
-
-  drawBullet: (bullet) ->
-    canvasCoords = getLocation(bullet)
-    @drawRect(canvasCoords, '#777')
-
-  #TODO: Refactor me (and make me less broken) plz!
-  drawTrees: (tree) ->
-    canvasCoords = toWorldCoords(getLocation(tree))
-    @drawSprite canvasCoords, @images.tree
-
-  drawWater: (water) ->
-    canvasCoords = toWorldCoords(getLocation(water))
-    @drawRect(canvasCoords, '#00f')
+  drawPlayer: (player) -> @drawRect   toViewPortCoords(getLocation player), '#050'
+  drawBullet: (bullet) -> @drawRect   toViewPortCoords(getLocation bullet), '#777'
+  drawTrees: (tree)  ->   @drawSprite toWorldView(getLocation tree), @images.tree
+  drawWater: (water) ->   @drawRect   toWorldView(getLocation water), '#00f' 
 
   drawRect: (point, color) ->
     @ctx.save
@@ -96,40 +84,21 @@ class window.Renderer
     if @model.content isnt "noModel"
       for key, player of @model.content.players
         if (player.id == @socketid)
-          return {} = 
-            x: player.x
-            y: player.y
-      return {} = #If you're not on the map for any reason, center in the middle
+          return getLocation player
+    return {} = #If there is no model defined...
         x: SMAPWIDTH * window.SCALE / 2
         y: SMAPHEIGHT * window.SCALE / 2
-    else
-      return {} = #If there is no model defined...
-          x: SMAPWIDTH * window.SCALE / 2
-          y: SMAPHEIGHT * window.SCALE / 2
-
-
-# grid_drawRect = (gridLoc, color, ctx) ->
-#   point = toWorldCoords gridLoc
-#   drawRect(point, color, ctx)
-
-# grid_drawSprite = (gridLoc, sprite, ctx) ->
-#   point = toWorldCoords gridLoc
-#   drawSprite(point,sprite,ctx)
-
-# drawGrid drawRect, point, "#777"
-# drawGrid drawSprite, point, @images.tree
-
-# drawGrid = (drawFunc, gridLoc, args...) ->
-#   canvasCoords = toWorldCoords gridLoc
-#   drawFunc canvasCoords args...
 
 #TODO: You may want to give the player object a 'getCoordinates' method
-getLocation = (piece) ->
-  x: piece.x
-  y: piece.y
+getLocation = (piece) -> {x: piece.x, y: piece.y}
 
-toWorldCoords = (tileLocation) ->
+#TODO: come up with better names - maybe call them 'from____'
+toWorldCoords = (tileLocation) -> #converts from grid/tile coordinates to world coordinates
   {x:tileLocation.x*CTILESIZE, y:tileLocation.y*CTILESIZE}
 
-toViewPortCoords = (viewPortLocation) ->
-  #
+#converts from world coordinates to view/canvas coordinates
+toViewPortCoords = (viewPortLocation) -> viewPortLocation 
+
+#converts from grid/tile coordinates to view/canvas coordinates 
+toWorldView = (loc) -> toViewPortCoords toWorldCoords loc
+
