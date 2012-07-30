@@ -201,6 +201,7 @@ class exports.Engine
             delete players[id]
             return {'response': RES_PLAYER_DESTROYED 'payload': {'id': id}}
 
+
     get_state: () ->
         players: players
         bullets: bullets
