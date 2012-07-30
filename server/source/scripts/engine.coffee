@@ -16,12 +16,13 @@ class exports.Engine
     TYPE_PLAYER = 'player'
     TYPE_BULLET = 'bullet'
 
-    RES_PLAYER_CREATED  = 'player_created'
-    RES_PLAYER_MOVED    = 'player_moved'
-    RES_PLAYER_FIRED    = 'player_fired'
-    RES_PLAYER_COLLIDED = 'player_collided'
-    RES_PLAYER_HIT      = 'player_hit'
-    RES_ERROR           = 'error'
+    RES_PLAYER_CREATED   = 'player_created'
+    RES_PLAYER_MOVED     = 'player_moved'
+    RES_PLAYER_FIRED     = 'player_fired'
+    RES_PLAYER_COLLIDED  = 'player_collided'
+    RES_PLAYER_HIT       = 'player_hit'
+    RES_ERROR            = 'error'
+    RES_PLAYER_DESTROYED = 'player_destroyed'
 
     responses = null
 
@@ -194,6 +195,11 @@ class exports.Engine
             bullet_count = bullet_count + 1
             return {'response': RES_PLAYER_FIRED, 'payload': {'id': id, 'x': p.x, 'y': p.y, 'bullet_id': b.id}}
         return {'response': RES_ERROR, 'paylaod': {'error': 'player not found'}}
+
+    player_destroy: (id) ->
+        if players.hasOwnProperty(id)
+            delete players[id]
+            return {'response': RES_PLAYER_DESTROYED 'paylaod': {'id': id}}
 
     get_state: () ->
         players: players

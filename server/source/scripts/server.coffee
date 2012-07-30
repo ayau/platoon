@@ -45,6 +45,8 @@ io.listen(server.listen 8080).sockets.on 'connection', (socket) ->
 
   socket.on 'disconnect', ->
     delete clients[socket.id]
+    engine.player_destroy(socket.id)
+
 
 respond = (data)->
   for id, client of clients
