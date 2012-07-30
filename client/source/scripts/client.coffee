@@ -1,7 +1,7 @@
 $ ->
   
-  @model =
-    content: {hi: "there"}
+  @model = #we store things within content instead of Model directly so when we pass around the model, updates are carried across using pointers.
+    content: "noModel"
   canvas =
     element: document.getElementById('canvas').getContext('2d')
     x: 800
@@ -10,7 +10,7 @@ $ ->
 
   socket = io.connect "#{window.location.href}"
   socket.on 'connected', (data) ->
-    setModel data.contents
+    #setModel data.contents
   socket.on 'update', (data) ->
     setModel data.contents
 

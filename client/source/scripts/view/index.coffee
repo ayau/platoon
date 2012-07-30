@@ -1,5 +1,5 @@
 #CONSTANTS
-window.INTERVAL = 2000 #rate of redraw
+window.INTERVAL = 33 #rate of redraw
 window.PLAYERWIDTH = 50
 window.PLAYERHEIGHT = 50
 window.BULLETWIDTH = 10
@@ -39,7 +39,7 @@ class window.Renderer
     @ctx.load
 
   toUiPieces: (model) ->
-    if model.content isnt {}
+    if model.content isnt "noModel"
       bullets = []
       players = []
       bullets.push(new UiPiece(bullet, "bullet")) for bullet in model.content.bullets
