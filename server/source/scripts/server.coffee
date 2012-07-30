@@ -37,8 +37,17 @@ io.listen(server.listen 8080).sockets.on 'connection', (socket) ->
   socket.on 'move', (data) ->
     data.id = socket.id
     # engine.player_move()
-    console.log engine.get_state()
+    # console.log engine.get_state()
+    if data.key == 'down'
+      engine.player_move(socket.id, 0, 10)
+    else if data.key == 'up'
+      engine.player_move(socket.id, 0, -10)
+    else if data.key =='left'
+      engine.player_move(socket.id, -10, 0)
+    else
+      engine.player_move(socket.id, 10, 0)
     data.contents = engine.get_state()
+    # engine.player_move(socket.id, 50, 50)
     # actions.push data
     # do update
     respond data
