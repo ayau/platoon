@@ -1,5 +1,5 @@
 #CONSTANTS
-window.INTERVAL = 100  #rate of redraw
+window.INTERVAL = 500  #rate of redraw
 
 SMAPWIDTH = 1500 #Server coordinate w
 SMAPHEIGHT = 1000 #Server coordinate h
@@ -18,59 +18,60 @@ class window.Renderer
     @model = model
     @socketid = socketid
     @images = images
+
   redraw: =>
-    @myPlayerPosition = @getMyPlayerPosition()
-    console.log(@myPlayerPosition)
+    @myPlayerPosition = @getMyPlayerPosition() #We need this to move the viewport
+    @uiPieces = @toUiPieces @model
+    @setupExtraFeatures()
+
+    #Painters algorithm for layer/render ordering
+    @drawBackground()
+    @drawTrees(p) for p in @uiPieces.features.trees
+    @drawWater(p) for p in @uiPieces.features.water
+    @drawPlayer(p) for p in @uiPieces.players
+    @drawBullet(p) for p in @uiPieces.bullets
+
+  setupExtraFeatures: ->
+    trees = [{x:1, y:1}, {x:2, y:1}]
+    water = [{x:4, y:1}, {x:5, y:1}]
+    @uiPieces.features = {}
+    @uiPieces.features.trees = trees
+    @uiPieces.features.water = water
+
+  drawPlayer: (player) ->
+    canvasCoords = getLocation(player)
+    @drawRect(canvasCoords, '#050')
+
+  drawBullet: (bullet) ->
+    canvasCoords = getLocation(bullet)
+    @drawRect(canvasCoords, '#777')
+
+  #TODO: Refactor me (and make me less broken) plz!
+  drawTrees: (tree) ->
+    canvasCoords = toWorldCoords(getLocation(tree))
+    @drawSprite canvasCoords, @images.tree
+
+  drawWater: (water) ->
+    canvasCoords = toWorldCoords(getLocation(water))
+    @drawRect(canvasCoords, '#00f')
+
+  drawRect: (point, color) ->
+    @ctx.save
+    @ctx.fillStyle = color
+    @ctx.fillRect point.x, point.y, CTILESIZE, CTILESIZE
+    @ctx.load
+
+  drawSprite: (point, sprite) ->
+    @ctx.drawImage(sprite, point.x, point.y, CTILESIZE, CTILESIZE)
+
+  drawBackground: ->
     @ctx.save
     @ctx.fillStyle = '#000'
     @ctx.fillRect 0, 0, @width, @height
     @ctx.load
-    uiPieces = @toUiPieces @model
-    #Painters algorithm for layer/render ordering
-    @drawBackground()
-
-    #Define extra UI elements to try using a grid for features 
-    trees = [[1,1], [2,1]]
-    water = [[4,2], [12,1]]
-    uiPieces.features = {}
-    uiPieces.features.trees = trees
-    uiPieces.features.water = water
-
-    @drawTrees(p) for p in uiPieces.features.trees
-    @drawWater(p) for p in uiPieces.features.water
-
-    @drawPlayer(p) for p in uiPieces.players
-    @drawBullet(p) for p in uiPieces.bullets
-
-  drawPlayer: (player) ->
-    @ctx.save
-    @ctx.fillStyle = '#005500'
-    @ctx.fillRect player.x, player.y, CTILESIZE, CTILESIZE
-    @ctx.load
-
-  drawBullet: (bullet) ->
-    @ctx.save
-    @ctx.fillStyle = '#777'
-    @ctx.fillRect bullet.x, bullet.y, CTILESIZE, CTILESIZE
-    @ctx.load
-
-  #TODO: Refactor me (and make me less broken) plz!
-  drawTrees: (tree) ->
-    drawSpriteOnGrid @ctx, @images.tree, tree[0], tree[1]
-
-  drawWater: (water) ->
-    @ctx.save
-    @ctx.fillStyle = '#00f'
-    @ctx.fillRect water[0] * CTILESIZE, water[1] * CTILESIZE, CTILESIZE, CTILESIZE
-    @ctx.load
-
-  drawBackground: ->
     for col in [0..SMAPWIDTH/STILESIZE]
       for row in [0..SMAPHEIGHT/STILESIZE]
-        drawSpriteOnGrid @ctx, @images.grass, col, row
-
-  drawSpriteOnGrid = (ctx, sprite, x, y) -> #do I pass in ctx like this? Better way?
-    ctx.drawImage sprite, x*CTILESIZE, y*CTILESIZE, CTILESIZE, CTILESIZE
+        @drawSprite (toWorldCoords {x: col, y: row}), @images.grass
 
   toUiPieces: (model) -> #Build a collection of UIPieces from the Model
     if model.content isnt "noModel"
@@ -105,3 +106,30 @@ class window.Renderer
       return {} = #If there is no model defined...
           x: SMAPWIDTH * window.SCALE / 2
           y: SMAPHEIGHT * window.SCALE / 2
+
+
+# grid_drawRect = (gridLoc, color, ctx) ->
+#   point = toWorldCoords gridLoc
+#   drawRect(point, color, ctx)
+
+# grid_drawSprite = (gridLoc, sprite, ctx) ->
+#   point = toWorldCoords gridLoc
+#   drawSprite(point,sprite,ctx)
+
+# drawGrid drawRect, point, "#777"
+# drawGrid drawSprite, point, @images.tree
+
+# drawGrid = (drawFunc, gridLoc, args...) ->
+#   canvasCoords = toWorldCoords gridLoc
+#   drawFunc canvasCoords args...
+
+#TODO: You may want to give the player object a 'getCoordinates' method
+getLocation = (piece) ->
+  x: piece.x
+  y: piece.y
+
+toWorldCoords = (tileLocation) ->
+  {x:tileLocation.x*CTILESIZE, y:tileLocation.y*CTILESIZE}
+
+toViewPortCoords = (viewPortLocation) ->
+  #
