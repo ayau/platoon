@@ -15,12 +15,16 @@ cameraOffsetY = 0
 
 class window.Renderer
   constructor: (canvas, images, model, socketid) ->
-    @width = canvas.x
-    @height = canvas.y
+    @width = canvas.width
+    @height = canvas.width
     @ctx = canvas.element
     @model = model
     @socketid = socketid
     @images = images
+
+  setCanvasSize: (width, height) =>
+    @width = width
+    @height = height
 
   redraw: =>
     @myPlayerPosition = @getMyPlayerPosition() #We need this to move the viewport
