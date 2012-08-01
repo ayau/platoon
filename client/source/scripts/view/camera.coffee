@@ -20,8 +20,8 @@ class window.Camera
       @y = ((@canvasHeight - @height)/2 - diffY) * 0.15 + @y
     if diffY > @height + (@canvasHeight - @height)/4 
       @y = (@height + (@canvasHeight - @height)/4 - diffY)*0.15 + @y
-
-    if mousePos.x #If mouse is enabled
+  
+    if mousePos && mousePos.x #If mouse is enabled
       diffX = @x + (myPlayerPosition.x + mousePos.x)/2 + @width
       diffY = @y + (myPlayerPosition.y + mousePos.y)/2 + @height
       @x = ((@canvasWidth )/2 - diffX) * 0.15 + @x

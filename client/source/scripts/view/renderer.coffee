@@ -1,5 +1,5 @@
 #CONSTANTS
-window.INTERVAL = 33  #rate of redraw
+window.INTERVAL = 100  #rate of redraw
 
 SMAPWIDTH = 1500 #Server coordinate w
 SMAPHEIGHT = 1000 #Server coordinate h
@@ -10,6 +10,8 @@ window.SCALE = CTILESIZE/STILESIZE
 CMAPWIDTH = SMAPWIDTH * window.SCALE
 CMAPHEIGHT = SMAPHEIGHT * window.SCALE
 
+USECAMERA = false
+
 # temporary way to get mouse position
 class window.mouseHandler
   constructor: ->
@@ -18,7 +20,6 @@ class window.mouseHandler
       @mousePos = {x: e.offsetX, y: e.offsetY}
   getPosition: ->
     return @mousePos
-
 
 class window.Renderer
   constructor: (canvas, images, model, socketid) ->
@@ -46,6 +47,7 @@ class window.Renderer
 
     #Painters algorithm for layer/render ordering
     @drawCommander.drawBackground()
+    @drawTrees(p) for p in @uiPieces.getTrees()
     @drawPlayer(p) for p in @uiPieces.getPlayers()
     @drawBullet(p) for p in @uiPieces.getBullets()
 
@@ -75,6 +77,10 @@ class window.Renderer
       return @players
     getBullets: ->
       return @bullets
+    getTrees: ->
+      trees = [{x: 10, y: 15}, {x: 11, y: 16}, {x: 12, y: 15}, {x: 10, y: 20}]
+      return [new UiPiece(trees[0], "grid", "tree"), new UiPiece(trees[1], "grid", "tree"), new UiPiece(trees[2], "grid", "tree"), new UiPiece(trees[3], "grid", "tree")]
+
     get2dArray= ->
       horisontalCount = (CMAPWIDTH/CTILESIZE)
       verticalCount = (CMAPHEIGHT/CTILESIZE)
@@ -112,6 +118,7 @@ class DrawCommander
     switch type
       when "player" then sprite = @images.player
       when "grass" then sprite = @images.grass
+      when "tree" then sprite = @images.tree
       else sprite = @images.player
     position = toCanvasCoords(position, @camera)
     @ctx.drawImage(sprite, position.x, position.y, CTILESIZE, CTILESIZE)
@@ -120,6 +127,7 @@ class DrawCommander
     gridToWorld = (position) -> #converts from grid/tile coordinates to world coordinates
       return {x:position.x*CTILESIZE, y:position.y*CTILESIZE}
     worldToCanvas = (position, camera) ->
+      if !USECAMERA then return position #If they disable the camera
       {x, y} = camera.getOffset()
       return {x: position.x + x, y: position.y + y} 
 
