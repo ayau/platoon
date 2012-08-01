@@ -8,9 +8,10 @@ class window.Sockets
     @socket.on 'update', (data) =>
       @model.content = data.contents
 
-  fire: (key) =>
-    @socket.emit 'move',
+  emit: (key, action) =>
+    @socket.emit 'key',
       key: key
+      action: action
 
   getSocketId: =>
     @socket.socket.sessionid

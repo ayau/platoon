@@ -1,8 +1,8 @@
 #CONSTANTS
 window.INTERVAL = 100  #rate of redraw
 
-SMAPWIDTH = 1500 #Server coordinate w
-SMAPHEIGHT = 1000 #Server coordinate h
+SMAPWIDTH = 2000 #Server coordinate w
+SMAPHEIGHT = 1100 #Server coordinate h
 STILESIZE = 25 #Server tile size in server coordinates
 CTILESIZE = 32 #Client tile size in pixels
 window.SCALE = CTILESIZE/STILESIZE

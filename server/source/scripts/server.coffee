@@ -34,7 +34,7 @@ io.listen(server.listen 8080).sockets.on 'connection', (socket) ->
   #   # actions.push data
   #   # do update
 
-  socket.on 'move', (data) ->
+  socket.on 'key', (data) ->
     data.id = socket.id
     # engine.player_move()
     # console.log engine.get_state()
@@ -46,7 +46,7 @@ io.listen(server.listen 8080).sockets.on 'connection', (socket) ->
       engine.player_move(socket.id, 0, -2)
     else if data.key =='left'
       engine.player_move(socket.id, -2, 0)
-    else
+    else if
       engine.player_move(socket.id, 2, 0)
     data.contents = engine.get_state()
     # actions.push data
@@ -62,7 +62,6 @@ respond = (data)->
   for id, client of clients
     client.emit 'update', data
 
-setInterval (-> frame++), 20
 # gameLoop = (loopCode) -> setInterval loopCode, 20
 # gameLoop ->
 #   data =
@@ -72,5 +71,3 @@ setInterval (-> frame++), 20
 #   # controller.loop respond
 #   actions = []
 #   frame++
-
-
