@@ -1,5 +1,5 @@
 #CONSTANTS
-window.INTERVAL = 50  #rate of redraw
+window.INTERVAL = 33  #rate of redraw
 
 SMAPWIDTH = 1500 #Server coordinate w
 SMAPHEIGHT = 1000 #Server coordinate h
@@ -19,102 +19,117 @@ class window.Renderer
     @socketid = socketid
     @images   = images
     @camera   = new window.Camera(@width, @height, CMAPWIDTH, CMAPHEIGHT)
+    @drawCommander = new DrawCommander(@ctx, @camera, @images)
 
+  #TODO: Use observer pattern
   setCanvasSize: (width, height) =>
     @width = width
     @height = height
     @camera.setDimen(@width, @height)
 
   redraw: =>
-    @myPlayerPosition = @getMyPlayerPosition() #We need this to move the viewport
-    #REALLY UGLY (but it works) Refactor?
-    #normal center position (boring)
-    # cameraOffsetX = @width/2 - @myPlayerPosition.x * window.SCALE
-    # cameraOffsetY = @height/2 - @myPlayerPosition.y * window.SCALE
-
+    #We need this to move the viewport
+    @myPlayerPosition = @getMyPlayerPosition()
     #smooth panning (fancy)
     @camera.update(@myPlayerPosition)
-    
-    @uiPieces = @toUiPieces @model
-    @setupExtraFeatures()
+
+    @uiPieces = new UiModel @model
 
     #Painters algorithm for layer/render ordering
-    @drawBackground()
-    @drawTrees(p) for p in @uiPieces.features.trees
-    @drawWater(p) for p in @uiPieces.features.water
-    @drawPlayer(p) for p in @uiPieces.players
-    @drawBullet(p) for p in @uiPieces.bullets
+    @drawCommander.drawBackground()
+    @drawPlayer(p) for p in @uiPieces.getPlayers()
+    @drawBullet(p) for p in @uiPieces.getBullets()
 
-  setupExtraFeatures: ->
-    trees = [{x:1, y:1}, {x:2, y:1}]
-    water = [{x:4, y:1}, {x:5, y:1}]
-    @uiPieces.features = {}
-    @uiPieces.features.trees = trees
-    @uiPieces.features.water = water
+  drawPlayer: (player) -> @drawCommander.draw("player", player.position)
+  drawBullet: (bullet) -> @drawCommander.draw("bullet", bullet.position)
+  drawTrees: (tree)  ->   @drawCommander.draw("tree", tree.position)
+  drawWater: (water) -> 
+    image = @images.water
+    pos =  water.getPosition
+    x = pos.x
+    y = pos.y
+    top = 0
+    right = 0
+    down = 0
+    left = 0
+    # if @objectArray[x-1][y]
+    @drawCommander.draw("water", water.position)
 
-  drawPlayer: (player) -> @drawRect   toViewPortCoords((getLocation player), @camera), '#050'
-  drawBullet: (bullet) -> @drawRect   toViewPortCoords((getLocation bullet), @camera), '#777'
-  drawTrees: (tree)  ->   @drawSprite toWorldView((getLocation tree), @camera), @images.tree
-  drawWater: (water) ->   @drawRect   toWorldView((getLocation water), @camera), '#00f' 
+  class UiModel
+    constructor: (model) ->
+        @bullets = []
+        @players = []
+        if model.content isnt "noModel"
+          @bullets.push(new UiPiece(bullet, "world", "bullet")) for bullet in model.content.bullets
+          @players.push(new UiPiece(player, "world", "player")) for key, player of model.content.players
+    getPlayers: ->
+      return @players
+    getBullets: ->
+      return @bullets
+    get2dArray= ->
+      horisontalCount = (CMAPWIDTH/CTILESIZE)
+      verticalCount = (CMAPHEIGHT/CTILESIZE)
+      array = new Array horisontalCount 
+      for x in [0..horisontalCount-1]
+        array[x] = new Array verticalCount
+        for y in [0..verticalCount-1]
+          array[x][y] = undefined
+      # array[water.x][water.y] = water for water in model.features.water
+      # array[tree.x][tree.y] = tree for tree in model.features.trees
+      return array
 
-  drawRect: (point, color) ->
-    @ctx.save
-    @ctx.fillStyle = color
-    @ctx.fillRect point.x, point.y, CTILESIZE, CTILESIZE
-    @ctx.load
-
-  drawSprite: (point, sprite) ->
-    @ctx.drawImage(sprite, point.x, point.y, CTILESIZE, CTILESIZE)
-
-  drawBackground: ->
-    @ctx.save
-    @ctx.fillStyle = '#000'
-    @ctx.fillRect 0, 0, @width, @height
-    @ctx.load
-    for col in [0..SMAPWIDTH/STILESIZE]
-      for row in [0..SMAPHEIGHT/STILESIZE]
-        @drawSprite toWorldView(({x: col, y: row}), @camera), @images.grass
-
-  toUiPieces: (model) -> #Build a collection of UIPieces from the Model
-    if model.content isnt "noModel"
-      bullets = []
-      players = []
-      bullets.push(new UiPiece(bullet)) for bullet in model.content.bullets
-      players.push(new UiPiece(player)) for key, player of model.content.players
-      return {} =
-        bullets: bullets
-        players: players
-    else
-      return {} =
-        bullets: []
-        players: []
 
   class UiPiece # Define the conversion from model pieces to UIpieces here.
-    constructor: (piece) ->
-      @x = Math.floor(piece.x * window.SCALE)
-      @y = Math.floor(piece.y * window.SCALE)
+    constructor: (piece, positionType, type) ->
+      @position = new Position(Math.floor(piece.x * window.SCALE), Math.floor(piece.y * window.SCALE), positionType)
+      @type = type
+    getPosition: -> 
+      @position
 
   getMyPlayerPosition: ->
     if @model.content isnt "noModel"
       for key, player of @model.content.players
         if (player.id == @socketid)
-          {x, y} = getLocation player
+          {x, y} = player
           return {x: x * window.SCALE, y: y * window.SCALE}
     return {} = #If there is no model defined...
         x: SMAPWIDTH * window.SCALE / 2
         y: SMAPHEIGHT * window.SCALE / 2
 
-#TODO: You may want to give the player object a 'getCoordinates' method
-getLocation = (piece) -> {x: piece.x, y: piece.y}
+class DrawCommander
+  constructor: (@ctx, @camera, @images) ->
+  
+  draw: (type, position) ->
+    switch type
+      when "player" then sprite = @images.player
+      when "grass" then sprite = @images.grass
+      else sprite = @images.player
+    position = toCanvasCoords(position, @camera)
+    @ctx.drawImage(sprite, position.x, position.y, CTILESIZE, CTILESIZE)
 
-#TODO: come up with better names - maybe call them 'from____'
-toWorldCoords = (tileLocation) -> #converts from grid/tile coordinates to world coordinates
-  {x:tileLocation.x*CTILESIZE, y:tileLocation.y*CTILESIZE}
+  toCanvasCoords = (position, camera) ->
+    gridToWorld = (position) -> #converts from grid/tile coordinates to world coordinates
+      return {x:position.x*CTILESIZE, y:position.y*CTILESIZE}
+    worldToCanvas = (position, camera) ->
+      {x, y} = camera.getOffset()
+      return {x: position.x + x, y: position.y + y} 
 
-#converts from world coordinates to view/canvas coordinates
-toViewPortCoords = (viewPortLocation, camera) ->
-  {x, y} = camera.getOffset()
-  return {x: viewPortLocation.x + x, y: viewPortLocation.y + y} 
+    switch position.positionType
+      when "world" then return worldToCanvas(position, camera)
+      when "grid" then return worldToCanvas(gridToWorld(position), camera)
+      when "canvas" then return position
+      else console.log "Position type undefined"
+    return position #catch all
 
-#converts from grid/tile coordinates to view/canvas coordinates 
-toWorldView = (loc, camera) -> toViewPortCoords (toWorldCoords loc), camera
+  drawBackground: ->
+    console.log "Drawing the background"
+    @ctx.save
+    @ctx.fillStyle = '#000'
+    @ctx.fillRect 0, 0, @width, @height
+    @ctx.load
+    for x in [0..SMAPWIDTH/STILESIZE]
+      for y in [0..SMAPHEIGHT/STILESIZE]
+        @draw("grass", new Position(x, y, "grid"))
+
+class Position 
+  constructor: (@x, @y, @positionType) ->

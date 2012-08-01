@@ -42,5 +42,7 @@ $ ->
   sources = #define all of the required graphics here
     grass: "/images/grass.png"
     tree: "/images/tree.png"
- 
+    water: "/images/water.png"
+    player: "/images/player.png"
+
   loadImages(sources, setupView) 
