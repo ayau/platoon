@@ -3,12 +3,22 @@ window.INTERVAL = 50  #rate of redraw
 
 SMAPWIDTH = 1500 #Server coordinate w
 SMAPHEIGHT = 1000 #Server coordinate h
-STILESIZE = 50 #Server tile size in server coordinates
+STILESIZE = 25 #Server tile size in server coordinates
 CTILESIZE = 32 #Client tile size in pixels
 window.SCALE = CTILESIZE/STILESIZE
 
 CMAPWIDTH = SMAPWIDTH * window.SCALE
 CMAPHEIGHT = SMAPHEIGHT * window.SCALE
+
+# temporary way to get mouse position
+class window.mouseHandler
+  constructor: ->
+    @mousePos = {}
+    $(document).mousemove (e) =>
+      @mousePos = {x: e.offsetX, y: e.offsetY}
+  getPosition: ->
+    return @mousePos
+
 
 class window.Renderer
   constructor: (canvas, images, model, socketid) ->
@@ -19,6 +29,7 @@ class window.Renderer
     @socketid = socketid
     @images   = images
     @camera   = new window.Camera(@width, @height, CMAPWIDTH, CMAPHEIGHT)
+    @mouseHandler = new window.mouseHandler()
 
   setCanvasSize: (width, height) =>
     @width = width
@@ -27,13 +38,8 @@ class window.Renderer
 
   redraw: =>
     @myPlayerPosition = @getMyPlayerPosition() #We need this to move the viewport
-    #REALLY UGLY (but it works) Refactor?
-    #normal center position (boring)
-    # cameraOffsetX = @width/2 - @myPlayerPosition.x * window.SCALE
-    # cameraOffsetY = @height/2 - @myPlayerPosition.y * window.SCALE
 
-    #smooth panning (fancy)
-    @camera.update(@myPlayerPosition)
+    @camera.update(@myPlayerPosition, @mouseHandler.getPosition())
     
     @uiPieces = @toUiPieces @model
     @setupExtraFeatures()
