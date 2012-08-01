@@ -7,12 +7,19 @@ $ ->
 
   @keyController = new KeyController(@sockets)
 
+  @mouseHandler = new window.mouseHandler()
+
+  $(document).mousemove (e) ->
+    @mouseHandler.mouseMove(e.offsetX, e.offsetY)
+  $(document).mouseup (e) ->
+    @mouseHandler.mouseClick(e.offsetX, e.offsetY)
+
   setupView = (images) => #When run this initialises the view and the canvas
     canvas =
       element: document.getElementById('canvas').getContext('2d')
       width: document.getElementById('canvas').width
       height: document.getElementById('canvas').height     
-    @view = new Renderer(canvas, images, @model, @sockets.getSocketId()) #View needs the socket id to know which player is them in the model
+    @view = new Renderer(canvas, images, @model, @sockets.getSocketId(), @mouseHandler) #View needs the socket id to know which player is them in the model
     makeCanvasScale() #View must be defined before this is called
     setInterval @view.redraw, window.INTERVAL
 

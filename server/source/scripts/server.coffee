@@ -41,13 +41,13 @@ io.listen(server.listen 8080).sockets.on 'connection', (socket) ->
 
     #JUST TO SEE THE PLAYER MOVE. Can delete if you wish to.
     if data.key == 'down'
-      engine.player_move(socket.id, 0, 10)
+      engine.player_move(socket.id, 0, 2)
     else if data.key == 'up'
-      engine.player_move(socket.id, 0, -10)
+      engine.player_move(socket.id, 0, -2)
     else if data.key =='left'
-      engine.player_move(socket.id, -10, 0)
+      engine.player_move(socket.id, -2, 0)
     else
-      engine.player_move(socket.id, 10, 0)
+      engine.player_move(socket.id, 2, 0)
     data.contents = engine.get_state()
     # actions.push data
     # do update
