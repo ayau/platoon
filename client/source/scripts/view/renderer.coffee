@@ -3,12 +3,22 @@ window.INTERVAL = 33  #rate of redraw
 
 SMAPWIDTH = 1500 #Server coordinate w
 SMAPHEIGHT = 1000 #Server coordinate h
-STILESIZE = 50 #Server tile size in server coordinates
+STILESIZE = 25 #Server tile size in server coordinates
 CTILESIZE = 32 #Client tile size in pixels
 window.SCALE = CTILESIZE/STILESIZE
 
 CMAPWIDTH = SMAPWIDTH * window.SCALE
 CMAPHEIGHT = SMAPHEIGHT * window.SCALE
+
+# temporary way to get mouse position
+class window.mouseHandler
+  constructor: ->
+    @mousePos = {}
+    $(document).mousemove (e) =>
+      @mousePos = {x: e.offsetX, y: e.offsetY}
+  getPosition: ->
+    return @mousePos
+
 
 class window.Renderer
   constructor: (canvas, images, model, socketid) ->
@@ -20,6 +30,7 @@ class window.Renderer
     @images   = images
     @camera   = new window.Camera(@width, @height, CMAPWIDTH, CMAPHEIGHT)
     @drawCommander = new DrawCommander(@ctx, @camera, @images)
+    @mouseHandler = new window.mouseHandler()
 
   #TODO: Use observer pattern
   setCanvasSize: (width, height) =>
@@ -28,11 +39,9 @@ class window.Renderer
     @camera.setDimen(@width, @height)
 
   redraw: =>
-    #We need this to move the viewport
-    @myPlayerPosition = @getMyPlayerPosition()
-    #smooth panning (fancy)
-    @camera.update(@myPlayerPosition)
-
+    @myPlayerPosition = @getMyPlayerPosition() #We need this to move the viewport
+    @camera.update(@myPlayerPosition, @mouseHandler.getPosition())
+    
     @uiPieces = new UiModel @model
 
     #Painters algorithm for layer/render ordering

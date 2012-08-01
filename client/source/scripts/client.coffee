@@ -17,7 +17,7 @@ $ ->
     setInterval @view.redraw, window.INTERVAL
 
   makeCanvasScale = () =>
-    resizeCanvas = =>
+    resizeCanvas = => 
       newWidth = $(window).width()
       newHeight = $(window).height()
       canvas = document.getElementById('canvas')
