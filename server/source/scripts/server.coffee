@@ -36,22 +36,16 @@ io.listen(server.listen 8080).sockets.on 'connection', (socket) ->
 
   socket.on 'key', (data) ->
     data.id = socket.id
-    # engine.player_move()
-    # console.log engine.get_state()
 
-    #JUST TO SEE THE PLAYER MOVE. Can delete if you wish to.
-    if data.key == 'down'
-      engine.player_move(socket.id, 0, 2)
-    else if data.key == 'up'
-      engine.player_move(socket.id, 0, -2)
-    else if data.key =='left'
-      engine.player_move(socket.id, -2, 0)
-    else if
-      engine.player_move(socket.id, 2, 0)
-    data.contents = engine.get_state()
+    if data.action == 'position'
+      {v, h} = data.key
+      engine.player_update(socket.id, h, v)
+
+
+    # data.contents = engine.get_state()
     # actions.push data
     # do update
-    respond data
+    # respond data
 
   socket.on 'disconnect', ->
     delete clients[socket.id]
@@ -62,12 +56,15 @@ respond = (data)->
   for id, client of clients
     client.emit 'update', data
 
-# gameLoop = (loopCode) -> setInterval loopCode, 20
-# gameLoop ->
-#   data =
-#     frame: frame
-#   data.actions = actions
-#   respond data
-#   # controller.loop respond
-#   actions = []
-#   frame++
+gameLoop = (loopCode) -> setInterval loopCode, 30
+gameLoop ->
+  engine.update()
+  data =
+    frame: frame
+  # data.actions = actions
+  data.contents = engine.get_state()
+  respond data
+  # controller.loop respond
+  actions = []
+  frame++
+

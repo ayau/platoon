@@ -8,6 +8,7 @@ class exports.Engine
     PLAYER_WIDTH  = 100
     PLAYER_HEIGHT = 100
     PLAYER_HEALTH = 1000
+    PLAYER_SPEED  = 2
 
     BULLET_WIDTH  = 30
     BULLET_HEIGHT = 30
@@ -60,13 +61,15 @@ class exports.Engine
             @y         = y ? 100
             @w         = PLAYER_WIDTH
             @h         = PLAYER_HEIGHT
+            @dx        = 0
+            @dy        = 0 
             @health    = PLAYER_HEALTH
             @isAlive   = true
             @rect      = new Rect(@x, @y, @w, @h, TYPE_PLAYER, @id)
             rects.push(@rect)
-        move : (dx, dy) ->
-            @x = @x + dx
-            @y = @y + dy
+        move : ->
+            @x = @x + @dx
+            @y = @y + @dy
         fire : (angle, v)->
             b = new Bullet bullet_count, @id, @x, @y, angle, v
             return b
@@ -161,18 +164,45 @@ class exports.Engine
         update_tree()
         return {'response': RES_PLAYER_CREATED, 'payload': {'id': id, 'x': x, 'y': y}}
 
-    player_move : (id, dx, dy) ->
+    player_update: (id, dx, dy) ->
         if players.hasOwnProperty(id)
             p = players[id]
-            v = p.v
-            if v*v < dx*dx + dy*dy
-                new_dx = v* Math.sin(Math.tan(dy / dx))
-                new_dy = v* Math.cos(Math.tan(dy / dx))
-                dx     = new_dx
-                dy     = new_dy
+            
+            if dx > 1
+                dx = 1
+            else if dx < -1
+                dx = -1
+
+            if dy > 1 
+                dy = 1
+            else if dy < -1
+                dy = -1
+
+            if Math.abs(dx) + Math.abs(dy) == 2
+                dx *= 0.707
+                dy *= 0.707
+
+            # if v*v < dx*dx + dy*dy
+            #     new_dx = v* Math.sin(Math.tan(dy / dx))
+            #     new_dy = v* Math.cos(Math.tan(dy / dx))
+            #     dx     = new_dx
+            #     dy     = new_dy
                 # for now, don't move player if player is hacking
-                return {'response': RES_ERROR, 'payload': {'error': 'player is moving faster than expected'}}
-            p.move(dx, dy)
+                # return {'response': RES_ERROR, 'payload': {'error': 'player is moving faster than expected'}}
+
+            p.dx = dx * PLAYER_SPEED
+            p.dy = dy * PLAYER_SPEED
+
+        # Not needed yet
+        #     return {'response': RES_PLAYER_MOVED, 'payload': {'id': id, 'x': p.x, 'y': p.y}}
+        # return {'response': RES_ERROR, 'payload': {'error': 'player not found'}}
+
+
+    player_move = (id) ->
+        if players.hasOwnProperty(id)
+            p = players[id]
+            p.move()
+            
             r = p.rect
             items =  tree.retrieve(r)
             for item in items
@@ -208,8 +238,12 @@ class exports.Engine
 
     #runs every interval
     update : ->
-        move_bullet(b) for b in bullets
-        log()
+
+        # can change to p instead. Method on player
+        player_move(id) for id of players
+
+        # move_bullet(b) for b in bullets
+        # log()
 
     move_bullet = (b) ->
         b.move()

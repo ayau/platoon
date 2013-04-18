@@ -2,13 +2,32 @@ class window.KeyController
   constructor: (sockets) ->
     @sockets = sockets
 
-    $('body').on 'keydown', (event) =>
-      key = keyCodeToKey(event.keyCode)
-      sockets.emit(key, "down")
+    @keysDown = {
+      up: false
+      down: false
+      left: false
+      right: false
+    }
 
-    $('body').on 'keyup', (event) =>   
+    document.addEventListener "keydown", (event) =>
       key = keyCodeToKey(event.keyCode)
-      sockets.emit(key, "up")
+      
+      # prevents multiple events
+      if key && !@keysDown[key]
+        @keysDown[key] = true
+        action = computeAction(@keysDown)
+        console.log @keysDown
+        sockets.emit(action, "position")
+
+    document.addEventListener "keyup", (event) =>
+      key = keyCodeToKey(event.keyCode)
+      
+      # prevents multiple events
+      if key && @keysDown[key]
+        @keysDown[key] = false
+        action = computeAction(@keysDown)
+        # console.log @keysDown
+        sockets.emit(action, "position")
 
   keyCodeToKey = (code) ->
     switch code
@@ -29,3 +48,21 @@ class window.KeyController
         key = "left"
       when 68 # d key
         key = "right"
+
+  computeAction = (keysDown) ->
+    vAction = 0
+    hAction = 0
+    
+    if keysDown.up
+      vAction -= 1
+    
+    if keysDown.down
+      vAction += 1
+    
+    if keysDown.left 
+      hAction -= 1
+    
+    if keysDown.right
+      hAction += 1
+
+    return {v: vAction, h: hAction}

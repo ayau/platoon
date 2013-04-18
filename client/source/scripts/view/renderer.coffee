@@ -10,7 +10,7 @@ window.SCALE = CTILESIZE/STILESIZE
 CMAPWIDTH = SMAPWIDTH * window.SCALE
 CMAPHEIGHT = SMAPHEIGHT * window.SCALE
 
-USECAMERA = true
+USECAMERA = false
 
 # temporary way to get mouse position
 class window.mouseHandler

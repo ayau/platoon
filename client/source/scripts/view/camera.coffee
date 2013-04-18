@@ -8,6 +8,7 @@ class window.Camera
     @canvasHeight = canvasHeight
     @CMAPWIDTH    = CMAPWIDTH
     @CMAPHEIGHT   = CMAPHEIGHT
+    
   update: (myPlayerPosition, mousePos)->
 
     diffX = @x + myPlayerPosition.x
