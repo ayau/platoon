@@ -62,7 +62,8 @@ class exports.Engine
             @w         = PLAYER_WIDTH
             @h         = PLAYER_HEIGHT
             @dx        = 0
-            @dy        = 0 
+            @dy        = 0
+            @barrelAngle = 0
             @health    = PLAYER_HEALTH
             @isAlive   = true
             @rect      = new Rect(@x, @y, @w, @h, TYPE_PLAYER, @id)
@@ -164,7 +165,7 @@ class exports.Engine
         update_tree()
         return {'response': RES_PLAYER_CREATED, 'payload': {'id': id, 'x': x, 'y': y}}
 
-    player_update: (id, dx, dy) ->
+    player_key_update: (id, dx, dy) ->
         if players.hasOwnProperty(id)
             p = players[id]
             
@@ -196,6 +197,16 @@ class exports.Engine
         # Not needed yet
         #     return {'response': RES_PLAYER_MOVED, 'payload': {'id': id, 'x': p.x, 'y': p.y}}
         # return {'response': RES_ERROR, 'payload': {'error': 'player not found'}}
+
+    player_mouse_update: (id, x, y) ->
+        if players.hasOwnProperty(id)
+            p = players[id]
+
+            p.barrelAngle = Math.atan((p.x - x) / (p.y - y)) * 180 / Math.PI
+
+            if p.y > y
+                p.barrelAngle += 180
+
 
 
     player_move = (id) ->

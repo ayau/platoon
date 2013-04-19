@@ -1,4 +1,4 @@
-class window.Sockets
+class Platoon.Sockets
   constructor: (model) ->
     @model = model
 
@@ -8,8 +8,13 @@ class window.Sockets
     @socket.on 'update', (data) =>
       @model.content = data.contents
 
-  emit: (key, action) =>
+  emitKey: (key, action) =>
     @socket.emit 'key',
+      key: key
+      action: action
+
+  emitMouse: (key, action) =>
+    @socket.emit 'mouse',
       key: key
       action: action
 

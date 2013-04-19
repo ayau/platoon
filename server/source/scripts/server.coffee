@@ -10,7 +10,7 @@ server = http.createServer (request, response) ->
     file.serve request, response
 
 frame = 0
-setInterval (-> frame++), 20
+# setInterval (-> frame++), 20
 
 actions = []
 
@@ -24,7 +24,8 @@ engine.init()
 
 io.listen(server.listen 8080).sockets.on 'connection', (socket) ->
   clients[socket.id] = socket
-  engine.player_create(socket.id, 75, 75)
+  engine.player_create(socket.id, 40, 40)
+  
   socket.emit 'connected',
     id: socket.id
     engine: engine.get_state()
@@ -39,13 +40,22 @@ io.listen(server.listen 8080).sockets.on 'connection', (socket) ->
 
     if data.action == 'position'
       {v, h} = data.key
-      engine.player_update(socket.id, h, v)
+      engine.player_key_update(socket.id, h, v)
 
 
     # data.contents = engine.get_state()
     # actions.push data
     # do update
     # respond data
+
+  socket.on 'mouse', (data) ->
+    data.id = socket.id
+
+    if data.action == 'move'
+      {x, y} = data.key
+      engine.player_mouse_update(socket.id, x, y)
+
+
 
   socket.on 'disconnect', ->
     delete clients[socket.id]

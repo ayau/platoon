@@ -1,7 +1,11 @@
-class window.KeyController
-  constructor: (sockets) ->
-    @sockets = sockets
+class Platoon.KeyController
+  constructor: () ->
 
+    @lastAction = {
+      v: 0
+      h: 0
+    }
+    
     @keysDown = {
       up: false
       down: false
@@ -15,9 +19,6 @@ class window.KeyController
       # prevents multiple events
       if key && !@keysDown[key]
         @keysDown[key] = true
-        action = computeAction(@keysDown)
-        console.log @keysDown
-        sockets.emit(action, "position")
 
     document.addEventListener "keyup", (event) =>
       key = keyCodeToKey(event.keyCode)
@@ -25,9 +26,6 @@ class window.KeyController
       # prevents multiple events
       if key && @keysDown[key]
         @keysDown[key] = false
-        action = computeAction(@keysDown)
-        # console.log @keysDown
-        sockets.emit(action, "position")
 
   keyCodeToKey = (code) ->
     switch code
@@ -49,20 +47,27 @@ class window.KeyController
       when 68 # d key
         key = "right"
 
-  computeAction = (keysDown) ->
+  # computes overall action of keypresses
+  # prevents movement when up and down are pressed at the same time
+  getPendingAction: ->
     vAction = 0
     hAction = 0
     
-    if keysDown.up
+    if @keysDown.up
       vAction -= 1
     
-    if keysDown.down
+    if @keysDown.down
       vAction += 1
     
-    if keysDown.left 
+    if @keysDown.left 
       hAction -= 1
     
-    if keysDown.right
+    if @keysDown.right
       hAction += 1
+
+    if @lastAction.v == vAction && @lastAction.h == hAction
+      return null
+    
+    @lastAction = {v: vAction, h: hAction}
 
     return {v: vAction, h: hAction}
