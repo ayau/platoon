@@ -55,6 +55,10 @@ io.listen(server.listen 8080).sockets.on 'connection', (socket) ->
       {x, y} = data.key
       engine.player_mouse_update(socket.id, x, y)
 
+    if data.action == 'fire'
+      {x, y} = data.key
+      engine.player_fire(socket.id, x, y, 1)
+
 
 
   socket.on 'disconnect', ->

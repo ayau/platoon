@@ -66,7 +66,6 @@ class Platoon.Renderer
             
             @scene.add @camera
 
-
             @renderer.setSize window.innerWidth, window.innerHeight
 
             setInterval @redraw, window.INTERVAL
@@ -77,22 +76,30 @@ class Platoon.Renderer
         @uiPieces.update()
 
         @updatePlayer(p) for key, p of @uiPieces.getPlayers()
+        @updateBullet(b) for key, b of @uiPieces.getBullets()
         
         @renderer.render @scene, @camera
 
     class UiModel
         constructor: (model) ->
-            # @bullets = []
+            @bullets = {}
             @players = {}
             @model = model
 
         update : ->
             if @model.content isnt "noModel"
+                
                 for key, player of @model.content.players
                     if !@players[key]
                         @addPlayer(key, player)
                     else
                         @updatePlayer(key, player)
+
+                for key, bullet of @model.content.bullets
+                    if !@bullets[key]
+                        @addBullet(key, bullet)
+                    else
+                        @updateBullet(key, bullet)
 
         addPlayer: (key, player) ->
             uiObject = @createPlayer(player)
@@ -105,6 +112,16 @@ class Platoon.Renderer
             p.position.y = player.y
             p.barrelAngle = player.barrelAngle
             p.rotation = player.rotation
+
+        addBullet: (key, bullet) ->
+            uiObject = @createBullet(bullet)
+            b = new UiPiece(bullet, uiObject, "world", "bullet")
+            @bullets[key] = b
+
+        updateBullet: (key, bullet) ->
+            b = @bullets[key]
+            b.position.x = bullet.x
+            b.position.y = bullet.y
 
         getPlayers: ->
             return @players
@@ -155,11 +172,33 @@ class Platoon.Renderer
 
             return playerRoot
 
+        createBullet: (bullet) =>
+            x = bullet.x
+            y = bullet.y
+
+            rotation = bullet.angle
+
+            y *= -1
+
+            bulletRoot = new THREE.Object3D()
+            Platoon.renderer.scene.add bulletRoot
+
+            bulletRoot.position.set(x, y, 0)
+            
+            # Bullet Mesh
+            bulletMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 2.5, 10, 10, false), Platoon.textures.bullet)
+            bulletMesh.rotation.set(0, 0, toRadian(rotation))
+            bulletMesh.position.set(0, 0, 5)
+            bulletRoot.add bulletMesh
+
+            return bulletRoot
+
 
     #The UIModel pieces are defined here
     class UiPiece
         constructor: (piece, uiObject, positionType, type) ->
-            @position = new Position(Math.floor(piece.x * window.SCALE), Math.floor(piece.y * window.SCALE), positionType)
+            # @position = new Position(Math.floor(piece.x * window.SCALE), Math.floor(piece.y * window.SCALE), positionType)
+            @position = new Position(piece.x, piece.y, positionType)
             @type = type
             @uiObject = uiObject
         getPosition: -> 
@@ -167,7 +206,8 @@ class Platoon.Renderer
 
     class UiPlayer extends UiPiece
         constructor: (piece, uiObject, positionType, type) ->
-            @position = new Position(Math.floor(piece.x * window.SCALE), Math.floor(piece.y * window.SCALE), positionType)
+            # @position = new Position(Math.floor(piece.x * window.SCALE), Math.floor(piece.y * window.SCALE), positionType)
+            @position = new Position(piece.x, piece.y, positionType)
             @type = type
             @uiObject = uiObject
             @barrelAngle = piece.barrelAngle
@@ -226,6 +266,18 @@ class Platoon.Renderer
             targetRotation.set(0, 0, barrelRad)
             playerRoot.gun.rotation.lerp(targetRotation, 0.8)
 
+
+    updateBullet: (bullet) ->
+        x = bullet.position.x
+        y = -1 * bullet.position.y
+
+        bulletRoot = bullet.uiObject
+
+        # moving bullet
+        targetPosition = bulletRoot.position.clone()
+        targetPosition.set(x, y, 0)
+        bulletRoot.position.lerp(targetPosition, 0.5)
+        # bulletRoot.position.set(x, y, 0)
 
     # degree to radian
     toRadian = (angle) ->

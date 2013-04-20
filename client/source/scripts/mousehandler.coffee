@@ -4,6 +4,7 @@ class Platoon.MouseHandler
         @lastMousePos = {x: 0, y: 0}
 
         @mousePos = {}
+        @mouseClickPos = null
 
         document.addEventListener "mousemove", (e) =>
             e.preventDefault()
@@ -20,7 +21,8 @@ class Platoon.MouseHandler
         @mousePos = {x: x, y: y}
 
     mouseClick: (x, y) ->
-        console.log "clicked at", getWorldCoords({x: x, y: y})
+        @mouseClickPos = {x: x, y: y}
+        # console.log "clicked at", getWorldCoords({x: x, y: y})
         # console.log ("Click at "+x+", "+y)
 
     getPendingPosition: ->
@@ -30,6 +32,12 @@ class Platoon.MouseHandler
         @lastMousePos = @mousePos
 
         return getWorldCoords(@mousePos)
+
+    getPendingClick: ->
+        if @mouseClickPos
+            clickPosition = @mouseClickPos
+            @mouseClickPos = null
+            return getWorldCoords(clickPosition)
 
     getWorldCoords = (coords) ->
         return {x: coords.x / Platoon.const.SCALE, y: coords.y / Platoon.const.MSCALE}

@@ -104,8 +104,12 @@ class exports.Engine
             @y += @dy
 
 
-        fire : (angle, v)->
-            b = new Bullet bullet_count, @id, @x, @y, angle, v
+        fire : (angle, v) ->
+            # 12.5 is the barrel length
+            barrelX = 12 * Math.sin(angle * Math.PI / 180)
+            barrelY = 12 * Math.cos(angle * Math.PI / 180)
+            
+            b = new Bullet bullet_count, @id, @x + barrelX, @y + barrelY, angle, v
             return b
 
     class Bullet extends Sprite
@@ -116,11 +120,11 @@ class exports.Engine
             @y         = y
             @w         = BULLET_WIDTH
             @h         = BULLET_HEIGHT
-            # @angle   = angle
+            @angle     = angle
             # @v       = v
             @damage    = BULLET_DAMAGE
-            @dx        = Math.floor(v * Math.cos(angle))
-            @dy        = Math.floor(v * Math.sin(angle))
+            @dx        = v * Math.sin(angle * Math.PI / 180)
+            @dy        = v * Math.cos(angle * Math.PI / 180)
             @rect      = new Rect(@x, @y, @w, @h, TYPE_BULLET, @id)
             rects.push(@rect)
         move : ->
@@ -258,11 +262,16 @@ class exports.Engine
             return {'response': RES_PLAYER_MOVED, 'payload': {'id': id, 'x': p.x, 'y': p.y}}
         return {'response': RES_ERROR, 'payload': {'error': 'player not found'}}
 
-    player_fire : (id, angle, v) ->
+    player_fire : (id, x, y, v) ->
         if bullets.hasOwnProperty(bullet_count)
             return false
         if players.hasOwnProperty(id)
             p = players[id]
+
+            # duplicated code from player_mouse_update
+            angle = Math.atan((p.x - x) / (p.y - y)) * 180 / Math.PI
+            angle += 180 if p.y > y
+
             b = p.fire(angle, v)
             bullets[bullet_count] = b
             update_tree()
@@ -286,12 +295,12 @@ class exports.Engine
         # can change to p instead. Method on player
         player_move(id) for id of players
 
-        # move_bullet(b) for b in bullets
+        move_bullet(b) for id, b of bullets
         # log()
 
     move_bullet = (b) ->
         b.move()
-        validate(b) #doesn't do anything yet
+        # validate(b) #doesn't do anything yet
 
     log = ->
         log_player(p) for p in players

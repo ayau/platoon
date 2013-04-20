@@ -30,6 +30,10 @@ $ ->
     if mouseAction && mouseAction.x
       Platoon.sockets.emitMouse(mouseAction, "move")
 
+    mouseClick = Platoon.mouseHandler.getPendingClick()
+    if mouseClick
+      Platoon.sockets.emitMouse(mouseClick, "fire")
+
   setInterval tick, TICK_INTERVAL
 
   # setupView = (images) => #When run this initialises the view and the canvas
