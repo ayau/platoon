@@ -1,5 +1,5 @@
 #CONSTANTS
-window.INTERVAL = 100  #rate of redraw
+window.INTERVAL = 20  #rate of redraw
 
 SMAPWIDTH = 2000 #Server coordinate w
 SMAPHEIGHT = 1100 #Server coordinate h
@@ -24,6 +24,8 @@ Platoon.textures = {
         blue: new THREE.MeshLambertMaterial(color: 0x000077)
     tip:
         blue: new THREE.MeshLambertMaterial(color: 0x000055)
+
+    bullet: new THREE.MeshLambertMaterial(color: 0xAAAAAA)
 }
 
 class Platoon.Renderer
@@ -44,7 +46,7 @@ class Platoon.Renderer
                         
             @scene = new THREE.Scene()
             @scene.add new THREE.AmbientLight 0x404040
-            @scene.add new THREE.HemisphereLight(0xFFF, 0x666, 1)
+            @scene.add new THREE.HemisphereLight(0xFFFFFF, 0x666666, 1)
 
             light = new THREE.DirectionalLight 0xffffff, 0.5
             light.position.set(5, -100, 200)
@@ -63,6 +65,7 @@ class Platoon.Renderer
             @camera.rotation.set(0.8, 0, 0)
             
             @scene.add @camera
+
 
             @renderer.setSize window.innerWidth, window.innerHeight
 
@@ -101,6 +104,7 @@ class Platoon.Renderer
             p.position.x = player.x
             p.position.y = player.y
             p.barrelAngle = player.barrelAngle
+            p.rotation = player.rotation
 
         getPlayers: ->
             return @players
@@ -111,14 +115,12 @@ class Platoon.Renderer
             x = player.x
             y = player.y
 
-            rotation = 30
+            rotation = player.rotation
             barrelAngle = player.barrelAngle
 
-            # return {x:position.x*CTILESIZE, y:position.y*CTILESIZE}
             # x *= CTILESIZE
             # y *= CTILESIZE
-            # x
-            # y
+
             y *= -1
             
             playerRoot = new THREE.Object3D()
@@ -169,33 +171,50 @@ class Platoon.Renderer
             @type = type
             @uiObject = uiObject
             @barrelAngle = piece.barrelAngle
+            @rotation = piece.rotation
 
 
     updatePlayer: (player) ->
         oldX = player.uiObject.position.x      
         oldY = player.uiObject.position.y
         oldBarrelAngle = player.uiObject.gun.rotation.z
+        oldRotation = player.uiObject.player.rotation.z
 
         playerRoot = player.uiObject
 
         x = player.position.x
         y = -1* player.position.y
 
-        rotation = 30
+        rotation = player.rotation
+        rotationRad = toRadian(rotation)
 
         barrelAngle = player.barrelAngle
         barrelRad = toRadian(barrelAngle)
 
         if x != oldX || y != oldY
-                
+            
+            # moving tank
             targetPosition = playerRoot.position.clone()
-
             targetPosition.set(x, y, 0)
-
             playerRoot.position.lerp(targetPosition, 0.5)
 
-        
-        if barrelRad != oldBarrelAngle
+            # rotation of tank
+            # 0.01 threshold for compare
+            if Math.abs(rotationRad - oldRotation) > 0.01
+                targetRotation = playerRoot.gun.rotation.clone()
+                
+                # add or subtract 2Pi based for smooth animation/lerp
+                if rotationRad > oldRotation + Math.PI/2
+                    playerRoot.player.rotation.set(0, 0, oldRotation + Math.PI)
+                else if rotationRad < oldRotation - Math.PI
+                    playerRoot.player.rotation.set(0, 0, oldRotation - Math.PI)
+                
+                targetRotation.set(0, 0, rotationRad)            
+                playerRoot.player.rotation.lerp(targetRotation, 0.8)
+
+        # rotation of barrel
+        # 0.01 threshold for compare
+        if Math.abs(barrelRad - oldBarrelAngle) > 0.01
             targetRotation = playerRoot.gun.rotation.clone()
             
             # add or subtract 2Pi based for smooth animation/lerp
@@ -205,7 +224,6 @@ class Platoon.Renderer
                 playerRoot.gun.rotation.set(0, 0, oldBarrelAngle - 2 * Math.PI)
             
             targetRotation.set(0, 0, barrelRad)
-        
             playerRoot.gun.rotation.lerp(targetRotation, 0.8)
 
 

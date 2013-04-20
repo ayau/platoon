@@ -8,7 +8,7 @@ class exports.Engine
     PLAYER_WIDTH  = 100
     PLAYER_HEIGHT = 100
     PLAYER_HEALTH = 1000
-    PLAYER_SPEED  = 2
+    PLAYER_SPEED  = 1
 
     BULLET_WIDTH  = 30
     BULLET_HEIGHT = 30
@@ -63,14 +63,47 @@ class exports.Engine
             @h         = PLAYER_HEIGHT
             @dx        = 0
             @dy        = 0
+            @rotation  = 0
             @barrelAngle = 0
             @health    = PLAYER_HEALTH
             @isAlive   = true
             @rect      = new Rect(@x, @y, @w, @h, TYPE_PLAYER, @id)
             rects.push(@rect)
+
         move : ->
-            @x = @x + @dx
-            @y = @y + @dy
+
+            # Calculating rotation of the tank
+            if @dx != 0 || @dy != 0
+                if @dx == 0 && @dy != 0
+                    rotation = 0
+                else if @dy == 0 && @dx != 0
+                    rotation = 90
+                else if @dx/@dy == 1
+                    rotation = 45
+                else if @dy/@dx == -1
+                    rotation = 135
+
+                if Math.abs(rotation - @rotation) > Math.abs(rotation + 180 - @rotation)
+                    rotation += 180
+                else if Math.abs(rotation - @rotation) > Math.abs(rotation - 180 - @rotation)
+                    @rotation += 180
+
+                if  rotation > @rotation
+                    @rotation += 5
+                else if rotation < @rotation
+                    @rotation -= 5
+
+                # reduce speed if rotation is not aligned with direction of movement
+                if Math.abs(rotation - @rotation) > 45
+                    @x += @dx * (Math.abs(rotation - @rotation)/-45 + 2)
+                    @y += @dy * (Math.abs(rotation - @rotation)/-45 + 2)
+                    return
+
+
+            @x += @dx
+            @y += @dy
+
+
         fire : (angle, v)->
             b = new Bullet bullet_count, @id, @x, @y, angle, v
             return b
@@ -93,6 +126,7 @@ class exports.Engine
         move : ->
             @x = @x + @dx
             @y = @y + @dy
+
         destroy: ->
             delete bullets[@id]
             rid = rects.indexOf(@rect)
@@ -206,7 +240,6 @@ class exports.Engine
 
             if p.y > y
                 p.barrelAngle += 180
-
 
 
     player_move = (id) ->
