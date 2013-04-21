@@ -2,16 +2,16 @@
 
 class exports.Engine
     #CONSTANTS
-    HEIGHT        = 5000
-    WIDTH         = 8000
+    HEIGHT        = 200
+    WIDTH         = 200
 
-    PLAYER_WIDTH  = 100
-    PLAYER_HEIGHT = 100
+    PLAYER_WIDTH  = 8
+    PLAYER_HEIGHT = 10
     PLAYER_HEALTH = 1000
     PLAYER_SPEED  = 1
 
-    BULLET_WIDTH  = 30
-    BULLET_HEIGHT = 30
+    BULLET_WIDTH  = 3
+    BULLET_HEIGHT = 3
     BULLET_DAMAGE = 300
 
     TYPE_PLAYER = 'player'
@@ -56,7 +56,7 @@ class exports.Engine
 
     class Player extends Sprite
         constructor: (id, x, y)->
-            @id = id
+            @id        = id
             @x         = x ? 100 #default position
             @y         = y ? 100
             @w         = PLAYER_WIDTH
@@ -68,6 +68,8 @@ class exports.Engine
             @health    = PLAYER_HEALTH
             @isAlive   = true
             @rect      = new Rect(@x, @y, @w, @h, TYPE_PLAYER, @id)
+            @mouseX    = 0
+            @mouseY    = 0
             rects.push(@rect)
 
         move : ->
@@ -97,11 +99,19 @@ class exports.Engine
                 if Math.abs(rotation - @rotation) > 45
                     @x += @dx * (Math.abs(rotation - @rotation)/-45 + 2)
                     @y += @dy * (Math.abs(rotation - @rotation)/-45 + 2)
-                    return
+                else        
+                    @x += @dx
+                    @y += @dy
+
+                @updateBarrelAngle()
 
 
-            @x += @dx
-            @y += @dy
+        updateBarrelAngle: ->
+            @barrelAngle = Math.atan((@x - @mouseX) / (@y - @mouseY)) * 180 / Math.PI
+
+            if @y > @mouseY
+                @barrelAngle += 180
+
 
 
         fire : (angle, v) ->
@@ -111,6 +121,15 @@ class exports.Engine
             
             b = new Bullet bullet_count, @id, @x + barrelX, @y + barrelY, angle, v
             return b
+
+        # toJSON: ->
+        #     id:             @id
+        #     x:              @x
+        #     y:              @y
+        #     dx:             @dx
+        #     dy:             @dy
+        #     rotation:       @rotation
+        #     barrelAngle:    @barrelAngle
 
     class Bullet extends Sprite
         constructor: (bullet_id, owner, x, y, angle, v)->
@@ -143,7 +162,7 @@ class exports.Engine
 
     validate = (sprite) ->
         isOutOfBounds(sprite)
-        hasCollided(sprite)
+        # hasCollided(sprite)
 
 
     #Checks to see if piece is out of bounds
@@ -176,8 +195,8 @@ class exports.Engine
     init : ->
         console.log 'Game engine started'
         # Holds all players
-        players = new Object()
-        bullets = new Object()
+        players = {}
+        bullets = {}
         rects = []
         responses = []
 
@@ -240,10 +259,10 @@ class exports.Engine
         if players.hasOwnProperty(id)
             p = players[id]
 
-            p.barrelAngle = Math.atan((p.x - x) / (p.y - y)) * 180 / Math.PI
+            p.mouseX = x
+            p.mouseY = y
 
-            if p.y > y
-                p.barrelAngle += 180
+            p.updateBarrelAngle()
 
 
     player_move = (id) ->
@@ -286,8 +305,10 @@ class exports.Engine
 
 
     get_state: () ->
-        players: players
-        bullets: bullets
+        {
+            players: players
+            bullets: bullets
+        }
 
     #runs every interval
     update : ->
@@ -300,7 +321,7 @@ class exports.Engine
 
     move_bullet = (b) ->
         b.move()
-        # validate(b) #doesn't do anything yet
+        validate(b) #doesn't do anything yet
 
     log = ->
         log_player(p) for p in players
