@@ -1,13 +1,13 @@
 #CONSTANTS
 window.INTERVAL = 20  #rate of redraw
 
-SMAPWIDTH = 2000 #Server coordinate w
-SMAPHEIGHT = 1100 #Server coordinate h
-STILESIZE = 25 #Server tile size in server coordinates
-CTILESIZE = 32 #Client tile size in pixels
+SMAPWIDTH    = 2000    #Server coordinate w
+SMAPHEIGHT   = 1100    #Server coordinate h
+STILESIZE    = 25      #Server tile size in server coordinates
+CTILESIZE    = 32      #Client tile size in pixels
 window.SCALE = CTILESIZE/STILESIZE
 
-CMAPWIDTH = SMAPWIDTH * window.SCALE
+CMAPWIDTH  = SMAPWIDTH * window.SCALE
 CMAPHEIGHT = SMAPHEIGHT * window.SCALE
 
 # global constants
@@ -26,6 +26,9 @@ Platoon.textures = {
         blue: new THREE.MeshLambertMaterial(color: 0x000055)
 
     bullet: new THREE.MeshLambertMaterial(color: 0xAAAAAA)
+    level:
+        floor: new THREE.MeshLambertMaterial(color: 0x666666)
+        wall: new THREE.MeshLambertMaterial(color: 0x999999)
 }
 
 class Platoon.Renderer
@@ -51,6 +54,7 @@ class Platoon.Renderer
             light = new THREE.DirectionalLight 0xffffff, 0.5
             light.position.set(5, -100, 200)
             @scene.add light
+        
             @renderer = new THREE.WebGLRenderer 'canvas': canvas, 'precision': 'mediump'
             # renderer.autoClearColor = false
             # renderer.autoUpdateScene = false
@@ -60,7 +64,7 @@ class Platoon.Renderer
                 0, 
                 window.innerWidth/Platoon.const.SCALE, 
                 0, 
-                -1 * window.innerHeight/Platoon.const.SCALE, - 500, 1000)
+                -1 * window.innerHeight/Platoon.const.SCALE, -500, 1000)
 
             @camera.rotation.set(0.8, 0, 0)
             
@@ -105,6 +109,7 @@ class Platoon.Renderer
             uiObject = @createPlayer(player)
             p = new UiPlayer(player, uiObject, "world", "player")
             @players[key] = p 
+            p.shouldRender = true
 
         updatePlayer: (key, player) ->
             p = @players[key]
@@ -112,16 +117,20 @@ class Platoon.Renderer
             p.position.y = player.y
             p.barrelAngle = player.barrelAngle
             p.rotation = player.rotation
+            p.shouldRender = true
 
         addBullet: (key, bullet) ->
             uiObject = @createBullet(bullet)
             b = new UiPiece(bullet, uiObject, "world", "bullet")
             @bullets[key] = b
+            b.shouldRender = true
 
         updateBullet: (key, bullet) ->
             b = @bullets[key]
             b.position.x = bullet.x
             b.position.y = bullet.y
+            b.angle = bullet.angle
+            b.shouldRender = true
 
         getPlayers: ->
             return @players
@@ -146,27 +155,29 @@ class Platoon.Renderer
             playerRoot.position.set(x, y, 0)
 
             # Player Mesh
-            playerMesh = new THREE.Mesh(new THREE.CubeGeometry(8, 10, 3), Platoon.textures.tank.blue)
+            c = player.color
+            color = new THREE.MeshLambertMaterial(color: c)
+            playerMesh = new THREE.Mesh(new THREE.CubeGeometry(8, 10, 3), color) # Platoon.textures.tank.blue
             playerMesh.rotation.set(0, 0, toRadian(rotation))
             playerMesh.position.set(0, 0, 1.5)
             playerRoot.add playerMesh
             playerRoot['player'] = playerMesh
 
             # Gun Mesh
-            gunMesh = new THREE.Mesh( new THREE.CubeGeometry(5, 5, 3), Platoon.textures.tank.blue)
+            gunMesh = new THREE.Mesh( new THREE.CubeGeometry(5, 5, 3), color) # Platoon.textures.tank.blue
             gunMesh.position.set(0, 0, 4.5)
             gunMesh.rotation.set(0, 0, toRadian(barrelAngle))        
             playerRoot.add gunMesh
             playerRoot['gun'] = gunMesh
 
             # Barrel Mesh
-            barrelMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 10, 10, 10, false), Platoon.textures.barrel.blue)
+            barrelMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 10, 10, 10, false), color) # Platoon.textures.barrel.blue
             barrelMesh.rotation.set(toRadian(-1), 0, 0)
             barrelMesh.position.set(0, -6, 0)
             gunMesh.add barrelMesh
 
 
-            barreltipMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 2, 10, 10, false), Platoon.textures.tip.blue)
+            barreltipMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 2, 10, 10, false), color) # Platoon.textures.tip.blue
             barreltipMesh.position.set(0, -4, 0)
             barrelMesh.add barreltipMesh
 
@@ -184,10 +195,10 @@ class Platoon.Renderer
             Platoon.renderer.scene.add bulletRoot
 
             bulletRoot.position.set(x, y, 0)
-            
+            bulletRoot.rotation.set(0, 0, toRadian(rotation))
+
             # Bullet Mesh
             bulletMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 2.5, 10, 10, false), Platoon.textures.bullet)
-            bulletMesh.rotation.set(0, 0, toRadian(rotation))
             bulletMesh.position.set(0, 0, 5)
             bulletRoot.add bulletMesh
 
@@ -214,7 +225,19 @@ class Platoon.Renderer
             @rotation = piece.rotation
 
 
+    removePlayer: (player) ->
+        @scene.remove player.uiObject
+
+    removeBullet: (bullet) ->
+        @scene.remove bullet.uiObject
+
     updatePlayer: (player) ->
+        # Remove player if it is not sent from the server
+        if !player.shouldRender
+            return @removePlayer(player)
+        player.shouldRender = false
+
+
         oldX = player.uiObject.position.x      
         oldY = player.uiObject.position.y
         oldBarrelAngle = player.uiObject.gun.rotation.z
@@ -268,8 +291,14 @@ class Platoon.Renderer
 
 
     updateBullet: (bullet) ->
+        # Remove player if it is not sent from the server
+        if !bullet.shouldRender
+            return @removeBullet(bullet)
+        bullet.shouldRender = false
+
         x = bullet.position.x
         y = -1 * bullet.position.y
+        rotation = bullet.angle
 
         bulletRoot = bullet.uiObject
 
@@ -279,9 +308,37 @@ class Platoon.Renderer
         bulletRoot.position.lerp(targetPosition, 0.5)
         # bulletRoot.position.set(x, y, 0)
 
+        # rotating bullet
+        bulletRoot.rotation.set(0, 0, toRadian(rotation))
+
     # degree to radian
     toRadian = (angle) ->
         return angle * Math.PI / 180
+
+
+    buildLevel: (map) ->
+        floorMesh = new THREE.Mesh( new THREE.CubeGeometry(map.width, map.height, 1), Platoon.textures.level.floor)
+        floorMesh.position.set(map.width / 2,  -1 * map.height / 2, -0.5)
+        # # floorMesh.updateMatrixWorld()
+        @scene.add floorMesh
+
+        tile_width = map.tiles.width
+        tile_height = map.tiles.height
+        tiles = map.tiles.contents
+
+        for {i, j} in tiles
+            
+            wallMesh = new THREE.Mesh(
+                new THREE.CubeGeometry(tile_width, tile_height, 8), 
+                Platoon.textures.level.wall)
+            
+            wallMesh.position.set(
+                i * tile_width + tile_width/2, 
+                -1 * (j * tile_height + tile_height/2), 
+                4)
+
+            # wallMesh.updateMatrixWorld()
+            @scene.add wallMesh
 
 
 class Position 

@@ -4,7 +4,9 @@ class Platoon.Sockets
 
     @socket = io.connect "#{window.location.href}"
     @socket.on 'connected', (data) =>
-      #@model.content = data.contents
+      Platoon.renderer.buildLevel data.contents.level
+      # @model.content = data.contents
+      
     @socket.on 'update', (data) =>
       @model.content = data.contents
 

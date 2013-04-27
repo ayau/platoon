@@ -1,8 +1,8 @@
 
 class Platoon.MouseHandler
     constructor: ->
-        @lastMousePos = {x: 0, y: 0}
 
+        @lastMousePos = {x: 0, y: 0}
         @mousePos = {}
         @mouseClickPos = null
 
@@ -11,6 +11,7 @@ class Platoon.MouseHandler
             x = e.offsetX or e.layerX
             y = e.offsetY or e.layerY
             @mouseMove(x, y)
+
         document.addEventListener "mouseup", (e) =>
             e.preventDefault()
             x = e.offsetX or e.layerX
@@ -22,22 +23,21 @@ class Platoon.MouseHandler
 
     mouseClick: (x, y) ->
         @mouseClickPos = {x: x, y: y}
-        # console.log "clicked at", getWorldCoords({x: x, y: y})
-        # console.log ("Click at "+x+", "+y)
 
     getPendingPosition: ->
         if @lastMousePos.x == @mousePos.x && @lastMousePos.y == @mousePos.y
             return null
 
         @lastMousePos = @mousePos
-
         return getWorldCoords(@mousePos)
 
     getPendingClick: ->
-        if @mouseClickPos
-            clickPosition = @mouseClickPos
-            @mouseClickPos = null
-            return getWorldCoords(clickPosition)
+        if !@mouseClickPos
+            return null
+
+        clickPosition = @mouseClickPos
+        @mouseClickPos = null
+        return getWorldCoords(clickPosition)
 
     getWorldCoords = (coords) ->
         return {x: coords.x / Platoon.const.SCALE, y: coords.y / Platoon.const.MSCALE}

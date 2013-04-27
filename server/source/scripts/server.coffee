@@ -22,13 +22,15 @@ engine = new Engine()
 
 engine.init()
 
-io.listen(server.listen 8080).sockets.on 'connection', (socket) ->
+io.listen(server.listen(8080), {'log level': 1}).sockets.on 'connection', (socket) ->
   clients[socket.id] = socket
   engine.player_create(socket.id, 40, 40)
   
   socket.emit 'connected',
     id: socket.id
-    engine: engine.get_state()
+    contents:
+      level: engine.loadLevel()
+    # engine: engine.get_state()
 
   # socket.on 'position', (data) ->
   #   data.id = socket.id

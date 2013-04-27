@@ -2,16 +2,16 @@
 
 class exports.Engine
     #CONSTANTS
-    HEIGHT        = 200
-    WIDTH         = 200
+    HEIGHT        = 220
+    WIDTH         = 220
 
-    PLAYER_WIDTH  = 8
+    PLAYER_WIDTH  = 10
     PLAYER_HEIGHT = 10
     PLAYER_HEALTH = 1000
     PLAYER_SPEED  = 1
 
-    BULLET_WIDTH  = 3
-    BULLET_HEIGHT = 3
+    BULLET_WIDTH  = 2
+    BULLET_HEIGHT = 2
     BULLET_DAMAGE = 300
 
     TYPE_PLAYER = 'player'
@@ -34,14 +34,18 @@ class exports.Engine
 
     rects = null
 
+    level = null
+    TILE_WIDTH = 10
+    TILE_HEIGHT = 10
+
     class Rect
-        constructor: (x, y, w, h, id, type)->
-            @id   = id
-            @type = type
-            @x    = x
-            @y    = y
-            @w    = w
-            @h    = h
+        constructor: (x, y, width, height, id, type)->
+            @id         = id
+            @type       = type
+            @x          = x
+            @y          = y
+            @width      = width
+            @height     = height
 
     class Sprite
         constructor: ->
@@ -67,10 +71,12 @@ class exports.Engine
             @barrelAngle = 0
             @health    = PLAYER_HEALTH
             @isAlive   = true
-            @rect      = new Rect(@x, @y, @w, @h, TYPE_PLAYER, @id)
+            @bulletCount = 5
+            @rect      = new Rect(@x, @y, @w, @h, @id, TYPE_PLAYER)
             @mouseX    = 0
             @mouseY    = 0
-            rects.push(@rect)
+
+            @color     = Math.floor(Math.random()*16777215) - 1
 
         move : ->
 
@@ -103,7 +109,38 @@ class exports.Engine
                     @x += @dx
                     @y += @dy
 
+                @rect.x = @x
+                @rect.y = @y
+
                 @updateBarrelAngle()
+
+        undoMove: ->
+            @dx *= -1
+            @dy *= -1
+            @move()
+            @dx = 0
+            @dy = 0
+
+        # backtrack movement if collided with other players
+        # isPushing: (player) ->
+        #     x = @dx
+        #     y = @dy
+
+        #     @dx = (player.dx - @dx)/2
+        #     @dy = (player.dy - @dy)/2
+
+        #     # no rotation required
+        #     if x != 0 or y != 0
+        #         @move()
+        #     else
+        #         @x += @dx
+        #         @y += @dy
+        #         @rect.x = @x
+        #         @rect.y = @y
+
+        #     @dx = x
+        #     @dy = y
+
 
 
         updateBarrelAngle: ->
@@ -112,15 +149,25 @@ class exports.Engine
             if @y > @mouseY
                 @barrelAngle += 180
 
-
-
         fire : (angle, v) ->
+            if @bulletCount is 0
+                return null
+
+            @bulletCount -= 1
+
             # 12.5 is the barrel length
             barrelX = 12 * Math.sin(angle * Math.PI / 180)
             barrelY = 12 * Math.cos(angle * Math.PI / 180)
             
-            b = new Bullet bullet_count, @id, @x + barrelX, @y + barrelY, angle, v
+            b = new Bullet bullet_count, @, @x + barrelX, @y + barrelY, angle, v
             return b
+
+        destroy: ->
+            delete players[@id]
+            
+            rid = rects.indexOf(@rect)
+            if rid != -1
+                rects.splice(rid, 1)
 
         # toJSON: ->
         #     id:             @id
@@ -144,14 +191,46 @@ class exports.Engine
             @damage    = BULLET_DAMAGE
             @dx        = v * Math.sin(angle * Math.PI / 180)
             @dy        = v * Math.cos(angle * Math.PI / 180)
-            @rect      = new Rect(@x, @y, @w, @h, TYPE_BULLET, @id)
-            rects.push(@rect)
+            @bounce    = 1
+            @rect      = new Rect(@x, @y, @w, @h, @id, TYPE_BULLET)
+            
         move : ->
             @x = @x + @dx
             @y = @y + @dy
 
-        destroy: ->
+            @rect.x = @x
+            @rect.y = @y
+
+        reflect_horizontal: (hasCollided) ->
+            @dx *= -1
+            @reflect(hasCollided)
+            
+        reflect_vertical: (hasCollided) ->
+            @dy *= -1
+            @reflect(hasCollided)
+            
+        reflect : (hasCollided) ->            
+            if @bounce < 1 && !hasCollided
+                return @remove()
+
+            @bounce -= 1
+
+            @move()
+
+            if @angle > 180
+                @angle -= 180
+            da = @angle - 90
+            @angle = 90 - da
+
+        # remove and mark as destroyed
+        remove: ->
             delete bullets[@id]
+            @owner.bulletCount += 1
+            @rect.destroyed = true
+
+        # remove bullet and destroy rect
+        destroy: ->
+            @remove()
             rid = rects.indexOf(@rect)
             if rid != -1
                 rects.splice(rid, 1)
@@ -162,8 +241,6 @@ class exports.Engine
 
     validate = (sprite) ->
         isOutOfBounds(sprite)
-        # hasCollided(sprite)
-
 
     #Checks to see if piece is out of bounds
     isOutOfBounds = (sprite) ->
@@ -183,14 +260,6 @@ class exports.Engine
 
         if !valid
             sprite.isOutOfBounds()
-
-    #Check to see if sprite has collided with something else
-    hasCollided = (sprite) ->
-        return true
-        # if sprite instanceof Player
-        #     console.log 'You hit a player'
-        # if sprite instanceof Bullet
-        #     console.log 'You hit a bullet'
 
     init : ->
         console.log 'Game engine started'
@@ -213,13 +282,47 @@ class exports.Engine
     get_rects : ->
         return rects.length
 
+    # Builds and return level. Return cached level if level is already loaded
+    loadLevel: ->
+        if !level
+
+            h = Math.floor(HEIGHT/TILE_WIDTH)
+            w = Math.floor(WIDTH/TILE_HEIGHT)
+            tiles = []
+
+            for i in [1...w-1]
+                for j in [1...h-1]
+                    if i is 1 or j is 1 or i is w-2 or j is h-2
+                        tiles.push {i, j}
+                        x = i * TILE_WIDTH + TILE_WIDTH/2
+                        y = j * TILE_HEIGHT + TILE_HEIGHT/2
+                        rect = new Rect(x, y, TILE_WIDTH, TILE_HEIGHT, 0, 'wall') # id is wrong. replace please
+                        rects.push(rect)
+
+            level = {
+                name: 'vanilla'
+                width: WIDTH 
+                height: HEIGHT
+                tiles:
+                    width: TILE_WIDTH
+                    height: TILE_HEIGHT
+                    contents: tiles
+            }
+
+        return level
+
     # API ----------------------------------------------------------------------------------------
     player_create : (id, x, y) ->
         if players.hasOwnProperty(id)
             return {'response': RES_ERROR, 'payload': {'error': 'player already exists'}}
         p = new Player id, x, y
         players[id] = p
-        update_tree()
+
+        # adding player to quad tree
+        rects.push(p.rect)
+        tree.insert(p.rect)
+        # update_tree()
+
         return {'response': RES_PLAYER_CREATED, 'payload': {'id': id, 'x': x, 'y': y}}
 
     player_key_update: (id, dx, dy) ->
@@ -270,16 +373,16 @@ class exports.Engine
             p = players[id]
             p.move()
             
-            r = p.rect
-            items =  tree.retrieve(r)
-            for item in items
-                if item != r
-                    if item.type == TYPE_BULLET
-                        return {'response': RES_PLAYER_HIT, 'payload': {'id': id, 'x': p.x, 'y': p.y, 'bullet_id': item.id}}
-                    else
-                        return {'response': RES_PLAYER_COLLIDED, 'payload': {'id': id, 'x': p.x, 'y': p.y, 'player_id': item.id}}
-            return {'response': RES_PLAYER_MOVED, 'payload': {'id': id, 'x': p.x, 'y': p.y}}
-        return {'response': RES_ERROR, 'payload': {'error': 'player not found'}}
+        #     r = p.rect
+        #     items =  tree.retrieve(r)
+        #     for item in items
+        #         if item != r
+        #             if item.type == TYPE_BULLET
+        #                 return {'response': RES_PLAYER_HIT, 'payload': {'id': id, 'x': p.x, 'y': p.y, 'bullet_id': item.id}}
+        #             else
+        #                 return {'response': RES_PLAYER_COLLIDED, 'payload': {'id': id, 'x': p.x, 'y': p.y, 'player_id': item.id}}
+        #     return {'response': RES_PLAYER_MOVED, 'payload': {'id': id, 'x': p.x, 'y': p.y}}
+        # return {'response': RES_ERROR, 'payload': {'error': 'player not found'}}
 
     player_fire : (id, x, y, v) ->
         if bullets.hasOwnProperty(bullet_count)
@@ -292,15 +395,25 @@ class exports.Engine
             angle += 180 if p.y > y
 
             b = p.fire(angle, v)
+            
+            # If for some reason cannot fire bullet (ie. out of bullets)
+            return if !b
+                
+
             bullets[bullet_count] = b
-            update_tree()
+
+            # adding bullet to quad tree
+            rects.push(b.rect)
+            tree.insert(b.rect)
+            # update_tree()
+
             bullet_count = bullet_count + 1
             return {'response': RES_PLAYER_FIRED, 'payload': {'id': id, 'x': p.x, 'y': p.y, 'bullet_id': b.id}}
         return {'response': RES_ERROR, 'payload': {'error': 'player not found'}}
 
     player_destroy: (id) ->
         if players.hasOwnProperty(id)
-            delete players[id]
+            players[id].destroy()
             return {'response': RES_PLAYER_DESTROYED, 'payload': {'id': id}}
 
 
@@ -317,7 +430,90 @@ class exports.Engine
         player_move(id) for id of players
 
         move_bullet(b) for id, b of bullets
+        
+        update_tree()
+        detectCollisions()
         # log()
+
+    detectCollisions = () ->
+
+        destroyedRects = []
+
+        for r in rects
+
+            if r.destroyed
+                continue
+
+            # ???
+            if r.type is 'wall'
+                continue
+
+            items = tree.retrieve(r)
+
+            r.isColliding = false
+
+            for item in items
+                
+                if r == item || item.destroyed
+                    continue
+
+                # if r is colliding and item is colliding, continue
+
+                # collision algorithm
+                dx = Math.abs(r.x - item.x)
+                dy = Math.abs(r.y - item.y)
+                width = r.width/2 + item.width/2
+                height = r.height/2 + item.height/2
+
+                colliding = dx < width && dy < height
+
+                if colliding
+
+                    if r.type is 'bullet' && !r.destroyed
+                        handleBulletCollision(r, item, r.isColliding)
+
+                    # else if item.type is 'bullet' && !item.destroyed
+                    #     handleBulletCollision(item, r)
+
+                    else if r.type is 'player' && !r.destroyed
+                        handlePlayerCollision(r, item, r.isColliding)
+
+                    # r.isColliding = true
+                    # item.isColliding = true               
+
+                    r.isColliding = true
+
+        # delete rects
+        for rid in destroyedRects
+            if rid != -1
+                rects.splice(rid, 1)
+
+    # handles collisions of bullets
+    handleBulletCollision = (b, item, isColliding) ->
+        bullet = bullets[b.id]
+        
+        if item.type is 'wall'
+            
+            if Math.abs(item.x - b.x) > Math.abs(item.y - b.y)
+                bullet.reflect_horizontal(isColliding)
+            else
+                bullet.reflect_vertical(isColliding)
+
+        else if item.type is 'bullet'
+            bullet.remove()
+        else if item.type is 'player'
+            bullet.remove()
+
+
+    handlePlayerCollision = (p, item) ->
+        player = players[p.id]
+
+        if item.type is 'wall'
+            player.undoMove()
+
+        # else if item.type is 'player'
+        #     player2 = players[item.id]
+        #     player.isPushing(player2)
 
     move_bullet = (b) ->
         b.move()
