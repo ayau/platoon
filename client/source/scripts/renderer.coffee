@@ -25,10 +25,10 @@ Platoon.textures = {
     tip:
         blue: new THREE.MeshLambertMaterial(color: 0x000055)
 
-    bullet: new THREE.MeshLambertMaterial(color: 0xAAAAAA)
+    bullet: new THREE.MeshLambertMaterial(color: 0xecf0f1)
     level:
-        floor: new THREE.MeshLambertMaterial(color: 0x666666)
-        wall: new THREE.MeshLambertMaterial(color: 0x999999)
+        floor: new THREE.MeshLambertMaterial(color: 0x7f8c8d)
+        wall: new THREE.MeshLambertMaterial(color: 0xbdc3c7)
 }
 
 class Platoon.Renderer
@@ -48,7 +48,7 @@ class Platoon.Renderer
         WebGLHelper.CreateGLCanvas root, 'Canvas', false, (canvas) =>
                         
             @scene = new THREE.Scene()
-            @scene.add new THREE.AmbientLight 0x404040
+            @scene.add new THREE.AmbientLight 0x101010 #0x404040
             @scene.add new THREE.HemisphereLight(0xFFFFFF, 0x666666, 1)
 
             light = new THREE.DirectionalLight 0xffffff, 0.5

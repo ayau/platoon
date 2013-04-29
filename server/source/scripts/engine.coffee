@@ -38,6 +38,16 @@ class exports.Engine
     TILE_WIDTH = 10
     TILE_HEIGHT = 10
 
+    colors = [
+        0x2980b9,
+        0x27AE60,
+        0xf39c12,
+        0xc0392b,
+        0xf39c12,
+        0x8e44ad,
+        0x2c3e50
+    ]
+
     class Rect
         constructor: (x, y, width, height, id, type)->
             @id         = id
@@ -76,7 +86,7 @@ class exports.Engine
             @mouseX    = 0
             @mouseY    = 0
 
-            @color     = Math.floor(Math.random()*16777215) - 1
+            @color     = colors[Math.floor(Math.random()*colors.length)] #Math.floor(Math.random()*16777215) - 1
 
         move : ->
 
@@ -122,25 +132,24 @@ class exports.Engine
             @dy = 0
 
         # backtrack movement if collided with other players
-        # isPushing: (player) ->
-        #     x = @dx
-        #     y = @dy
+        isPushing: (player) ->
+            x = @dx
+            y = @dy
+            @dx = (player.dx - @dx)/2
+            @dy = (player.dy - @dy)/2
+            
+            # no rotation required
+            if x != 0 or y != 0
+                @move()
+            else
+                @x += @dx
+                @y += @dy
+                @rect.x = @x
+                @rect.y = @y
 
-        #     @dx = (player.dx - @dx)/2
-        #     @dy = (player.dy - @dy)/2
-
-        #     # no rotation required
-        #     if x != 0 or y != 0
-        #         @move()
-        #     else
-        #         @x += @dx
-        #         @y += @dy
-        #         @rect.x = @x
-        #         @rect.y = @y
-
-        #     @dx = x
-        #     @dy = y
-
+            @dx = x
+            @dy = y
+            # console.log 'after', @x
 
 
         updateBarrelAngle: ->
@@ -454,7 +463,7 @@ class exports.Engine
 
             for item in items
                 
-                if r == item || item.destroyed
+                if r == item
                     continue
 
                 # if r is colliding and item is colliding, continue
@@ -468,7 +477,6 @@ class exports.Engine
                 colliding = dx < width && dy < height
 
                 if colliding
-
                     if r.type is 'bullet' && !r.destroyed
                         handleBulletCollision(r, item, r.isColliding)
 
@@ -483,18 +491,22 @@ class exports.Engine
 
                     r.isColliding = true
 
+            if r.destroyed
+                destroyedRects.push(r)
+
         # delete rects
-        for rid in destroyedRects
+        for r in destroyedRects
+            rid = rects.indexOf(r)
             if rid != -1
                 rects.splice(rid, 1)
+        
 
     # handles collisions of bullets
     handleBulletCollision = (b, item, isColliding) ->
         bullet = bullets[b.id]
         
         if item.type is 'wall'
-            
-            if Math.abs(item.x - b.x) > Math.abs(item.y - b.y)
+            if Math.abs(item.x - b.x) > Math.abs(item.y - b.y) # wrong calculation 
                 bullet.reflect_horizontal(isColliding)
             else
                 bullet.reflect_vertical(isColliding)
@@ -511,9 +523,10 @@ class exports.Engine
         if item.type is 'wall'
             player.undoMove()
 
-        # else if item.type is 'player'
-        #     player2 = players[item.id]
-        #     player.isPushing(player2)
+        else if item.type is 'player'
+            player2 = players[item.id]
+            player.isPushing(player2)
+            player2.isPushing(player)
 
     move_bullet = (b) ->
         b.move()
