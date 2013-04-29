@@ -9,6 +9,7 @@ class exports.Engine
     PLAYER_HEIGHT = 10
     PLAYER_HEALTH = 1000
     PLAYER_SPEED  = 1
+    PLAYER_RECOIL = 8
 
     BULLET_WIDTH  = 2
     BULLET_HEIGHT = 2
@@ -85,10 +86,13 @@ class exports.Engine
             @rect      = new Rect(@x, @y, @w, @h, @id, TYPE_PLAYER)
             @mouseX    = 0
             @mouseY    = 0
-
+            @recoil_seconds = 0
             @color     = colors[Math.floor(Math.random()*colors.length)] #Math.floor(Math.random()*16777215) - 1
 
         move : ->
+            if @recoil_seconds > 0
+                @recoil_seconds -= 1
+                return
 
             # Calculating rotation of the tank
             if @dx != 0 || @dy != 0
@@ -159,8 +163,10 @@ class exports.Engine
                 @barrelAngle += 180
 
         fire : (angle, v) ->
-            if @bulletCount is 0
+            if @bulletCount is 0 || @recoil_seconds > 0
                 return null
+
+            @recoil()
 
             @bulletCount -= 1
 
@@ -170,6 +176,9 @@ class exports.Engine
             
             b = new Bullet bullet_count, @, @x + barrelX, @y + barrelY, angle, v
             return b
+
+        recoil: ->
+            @recoil_seconds = PLAYER_RECOIL
 
         destroy: ->
             delete players[@id]
