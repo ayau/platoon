@@ -1,0 +1,76 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Museo Sans","Lucida Grande",Arial,sans-serif;
+}
+
+#content {
+  display: none;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  background: #3498db;
+  width: 0px;
+  border-left: 2px solid #2980b9;
+
+  -webkit-transition: all 0.33s ease-out;
+  -moz-transition: all 0.33s ease-out;
+  -ms-transition: all 0.33s ease-out;
+  -o-transition: all 0.33s ease-out;
+  transition: all 0.33s ease-out;
+
+  .container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 10px 20px;
+  }
+
+  h1 {
+
+    color: #8CC2E6;
+    text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.2);
+    margin: 0px;
+    text-align: right;
+  }
+
+  .players {
+    list-style: none;
+    padding: 0px;
+
+    .avatar {
+      background: #8e44ad;
+      width: 30px;
+      height: 30px;
+      border: 2px solid #8CC2E6;
+      border-radius: 2px;
+      float: left;
+      margin: 10px;
+    }
+
+    li {
+
+      p {
+        margin: 0px;
+        padding: 15px;
+        font-size: 20px;
+        color: #2c3e50;
+      }
+    }
+  }
+
+  footer {
+    color: #8CC2E6;
+    text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    margin: 10px;
+  }
+}

@@ -15,6 +15,7 @@ task 'build', 'Build all resources', (options) ->
   prepare options, dir.server, Patterns.Coffee
   prepare options, dir.static, Patterns.Copy, ->
     prepare options, dir.client, Patterns.Coffee
+    prepare options, dir.stylesheets, Patterns.Stylus
 
 task 'run', 'Run the server', (options) ->
   process = spawn 'node', ['server/compiled/scripts/server.js']
@@ -39,6 +40,9 @@ dir =
     source: 'client/source/scripts'
     destination: 'client/compiled/scripts'
     test: 'client/test'
+  stylesheets:
+    source: 'client/source/stylesheets'
+    destination: 'client/compiled/stylesheets'
   static:
     source: 'client/source/static'
     destination: 'client/compiled'

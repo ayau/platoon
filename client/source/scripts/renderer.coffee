@@ -1,14 +1,17 @@
 #CONSTANTS
 window.INTERVAL = 20  #rate of redraw
 
-SMAPWIDTH    = 2000    #Server coordinate w
-SMAPHEIGHT   = 1100    #Server coordinate h
-STILESIZE    = 25      #Server tile size in server coordinates
-CTILESIZE    = 32      #Client tile size in pixels
-window.SCALE = CTILESIZE/STILESIZE
+SMAPWIDTH    = 0        #Server coordinate w
+SMAPHEIGHT   = 0        #Server coordinate h
+CMAPWIDTH    = 0        # Client width
+CMAPHEIGHT   = 0        # Client height
 
-CMAPWIDTH  = SMAPWIDTH * window.SCALE
-CMAPHEIGHT = SMAPHEIGHT * window.SCALE
+# STILESIZE    = 25      #Server tile size in server coordinates
+# CTILESIZE    = 32      #Client tile size in pixels
+# window.SCALE = CTILESIZE/STILESIZE
+
+# CMAPWIDTH  = SMAPWIDTH * window.SCALE
+# CMAPHEIGHT = SMAPHEIGHT * window.SCALE
 
 # global constants
 Platoon.const = {
@@ -38,8 +41,6 @@ class Platoon.Renderer
         @ctx = canvas.element
         @model = model
         @socketid = socketid
-        # @mouseHandler = mouseHandler
-        # @camera   = new window.Camera(@width, @height, CMAPWIDTH, CMAPHEIGHT)
         # @drawCommander = new DrawCommander()
         @uiPieces = new UiModel @model
         @setupView(canvas)
@@ -73,6 +74,8 @@ class Platoon.Renderer
             @renderer.setSize window.innerWidth, window.innerHeight
 
             setInterval @redraw, window.INTERVAL
+            window.addEventListener 'resize', @measure, false
+            @measure()
 
     redraw: =>
         # @myPlayerPosition = @getMyPlayerPosition() #We need this to move the viewport
@@ -83,6 +86,29 @@ class Platoon.Renderer
         @updateBullet(b) for key, b of @uiPieces.getBullets()
         
         @renderer.render @scene, @camera
+
+    measure: =>
+
+        windowWidth = window.innerWidth
+        windowHeight = window.innerHeight
+
+        CMAPWIDTH = windowWidth
+        CMAPHEIGHT = windowHeight
+
+        wScale = 1100 / window.innerWidth
+        hScale = 765 / window.innerHeight
+
+        if hScale > wScale
+            scale = hScale
+        else
+            scale = wScale
+
+        @renderer.setSize CMAPWIDTH, CMAPHEIGHT
+        @camera.right = CMAPWIDTH/Platoon.const.SCALE * scale
+        @camera.bottom = -1 * CMAPHEIGHT/Platoon.const.SCALE * scale
+        @camera.updateProjectionMatrix()
+
+        Platoon.ui.resize(CMAPWIDTH*scale, CMAPHEIGHT*scale)
 
     class UiModel
         constructor: (model) ->
@@ -317,8 +343,11 @@ class Platoon.Renderer
 
 
     buildLevel: (map) ->
-        floorMesh = new THREE.Mesh( new THREE.CubeGeometry(map.width, map.height, 1), Platoon.textures.level.floor)
-        floorMesh.position.set(map.width / 2,  -1 * map.height / 2, -0.5)
+        SMAPWIDTH    = map.width
+        SMAPHEIGHT   = map.height
+
+        floorMesh = new THREE.Mesh( new THREE.CubeGeometry(SMAPWIDTH, SMAPHEIGHT, 1), Platoon.textures.level.floor)
+        floorMesh.position.set(SMAPWIDTH / 2,  -1 * SMAPHEIGHT / 2, -0.5)
         # # floorMesh.updateMatrixWorld()
         @scene.add floorMesh
 

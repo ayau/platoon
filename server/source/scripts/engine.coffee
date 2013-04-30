@@ -9,7 +9,7 @@ class exports.Engine
     PLAYER_HEIGHT = 10
     PLAYER_HEALTH = 1000
     PLAYER_SPEED  = 1
-    PLAYER_RECOIL = 8
+    PLAYER_RECOIL = 7
 
     BULLET_WIDTH  = 2
     BULLET_HEIGHT = 2
@@ -44,7 +44,6 @@ class exports.Engine
         0x27AE60,
         0xf39c12,
         0xc0392b,
-        0xf39c12,
         0x8e44ad,
         0x2c3e50
     ]
@@ -87,7 +86,8 @@ class exports.Engine
             @mouseX    = 0
             @mouseY    = 0
             @recoil_seconds = 0
-            @color     = colors[Math.floor(Math.random()*colors.length)] #Math.floor(Math.random()*16777215) - 1
+
+            @color = colors[Math.floor(Math.random()*colors.length)]
 
         move : ->
             if @recoil_seconds > 0
@@ -316,6 +316,14 @@ class exports.Engine
                         y = j * TILE_HEIGHT + TILE_HEIGHT/2
                         rect = new Rect(x, y, TILE_WIDTH, TILE_HEIGHT, 0, 'wall') # id is wrong. replace please
                         rects.push(rect)
+
+            i = 13
+            for j in [6...w-8]
+                tiles.push {i, j}
+                x = i* TILE_WIDTH + TILE_WIDTH/2
+                y = j * TILE_HEIGHT + TILE_HEIGHT/2
+                rect = new Rect(x, y, TILE_WIDTH, TILE_HEIGHT, 0, 'wall') # id is wrong. replace please
+                rects.push(rect)
 
             level = {
                 name: 'vanilla'

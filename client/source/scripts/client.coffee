@@ -16,6 +16,8 @@ $ ->
 
   canvas = document.getElementById('GLCanvas')
 
+  Platoon.ui = new Platoon.UIController()
+
   Platoon.renderer = new Platoon.Renderer(canvas, @model, Platoon.sockets.getSocketId())
 
   tick = () ->

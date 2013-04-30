@@ -2,21 +2,33 @@
 <html>
   <head>
     <title>Platoon</title>
-    <link rel="stylesheet" type="text/css" href="style.css?body=0">
+    <link rel="stylesheet" type="text/css" href="/stylesheets/style.css?body=0">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
     <script src="/socket.io/socket.io.js?body=0"></script>
-    <!-- <script src="/scripts/view/camera.js?body=1"></script>
-    <script src="/scripts/view/renderer.js?body=1"></script> -->
     <script src="/lib/webglhelper.js"></script>
     <script src="/lib/three.min.js"></script>
     <script src="/scripts/client.js?body=0"></script>
     <script src="/scripts/renderer.js"></script>
     <script src="/scripts/keycontroller.js?body=0"></script>
     <script src="/scripts/mousehandler.js"></script>
+    <script src="/scripts/uicontroller.js?body=0"></script>
     <script src="/scripts/sockets.js?body=0"></script>
   </head>
   <body style="overflow: hidden">
+    
     <div id='GLCanvas'></div>
-    <!-- <canvas id="canvas" width="800" height="500"></canvas> -->
+
+    <div id='content'>
+      <div class='container'>
+        <h1>Platoon</h1>
+        <ul class='players'>
+          <li>
+            <div class='avatar'></div>
+            <p>Alex</p>
+          </li>
+        </ul>
+        <footer>Developed by Alex Yau</footer>
+      </div>
+    </div>
   </body>
 </html>

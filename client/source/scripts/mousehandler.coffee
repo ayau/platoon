@@ -8,14 +8,14 @@ class Platoon.MouseHandler
 
         document.addEventListener "mousemove", (e) =>
             e.preventDefault()
-            x = e.offsetX or e.layerX
-            y = e.offsetY or e.layerY
+            x = e.pageX or e.layerX
+            y = e.pageY or e.layerY
             @mouseMove(x, y)
 
         document.addEventListener "mouseup", (e) =>
             e.preventDefault()
-            x = e.offsetX or e.layerX
-            y = e.offsetY or e.layerY
+            x = e.pageX or e.layerX
+            y = e.pageY or e.layerY
             @mouseClick(x, y)
 
     mouseMove: (x, y) ->
