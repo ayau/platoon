@@ -106,7 +106,7 @@ class exports.Engine
                     rotation = 135
 
                 if Math.abs(rotation - @rotation) > Math.abs(rotation + 180 - @rotation)
-                    rotation += 180
+                    @rotation -= 180
                 else if Math.abs(rotation - @rotation) > Math.abs(rotation - 180 - @rotation)
                     @rotation += 180
 

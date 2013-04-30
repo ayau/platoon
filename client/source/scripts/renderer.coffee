@@ -295,7 +295,7 @@ class Platoon.Renderer
                 # add or subtract 2Pi based for smooth animation/lerp
                 if rotationRad > oldRotation + Math.PI/2
                     playerRoot.player.rotation.set(0, 0, oldRotation + Math.PI)
-                else if rotationRad < oldRotation - Math.PI
+                else if rotationRad < oldRotation - Math.PI/2
                     playerRoot.player.rotation.set(0, 0, oldRotation - Math.PI)
                 
                 targetRotation.set(0, 0, rotationRad)            
