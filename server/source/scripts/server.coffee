@@ -8,6 +8,7 @@ file = new Server './client/compiled'
 server = http.createServer (request, response) ->
   request.addListener 'end', ->
     file.serve request, response
+  request.resume()
 
 frame = 0
 # setInterval (-> frame++), 20
